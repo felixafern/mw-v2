@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import type { Client } from './data'
 
 function PersonalRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
@@ -20,6 +20,13 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   const [softFactsExpanded, setSoftFactsExpanded] = useState(false)
   const [letterExpanded, setLetterExpanded] = useState(false)
   const [riskMenuOpen, setRiskMenuOpen] = useState<string | null>(null)
+  const [isNarrow, setIsNarrow] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)')
+    const handler = (e: MediaQueryListEvent) => setIsNarrow(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
   const isJoint = !!client.spouseInitials
   const [activeMember, setActiveMember] = useState<'primary' | 'spouse' | 'household'>(isJoint ? 'household' : 'primary')
   const lastName = client.name.split(' ').pop()
@@ -537,9 +544,52 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 const raw = h.value.startsWith('£') ? parseFloat(h.value.replace(/[£MkK,]/g, '')) * (h.value.includes('M') ? 1 : 0.001) : 0
                 return s + raw
               }, 0))
+
+            const personSection = (
+              name: string,
+              initials: string,
+              total: string,
+              cats: typeof jimmyCats,
+              keyPrefix: string
+            ) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {/* Person header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div className="ds-avatar">{initials}</div>
+                    <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-1)' }}>{name}</span>
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{total}</div>
+                </div>
+                {/* Categories grouped under this person */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {cats.map((cat, ci) => (
+                    <div key={`${keyPrefix}-${cat.label}-${ci}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+                      {renderCatHeader(cat.label, catTotal(cat.holdings))}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {cat.holdings.map((h, hi) => renderCard(h, `${keyPrefix}-${cat.label}-${hi}`))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+
+            if (isNarrow) {
+              // Tablet: show each person's holdings as a complete grouped section
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+                  <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 32 }}>
+                    {personSection(client.name, client.initials, fmt(jimmyTotalM), jimmyCats, 'jimmy')}
+                  </div>
+                  {personSection(client.spouseName ?? '', client.spouseInitials ?? '', fmt(sarahTotalM), sarahCats, 'sarah')}
+                </div>
+              )
+            }
+
+            // Desktop: side-by-side columns with row-aligned categories
             return (
               <div className="r-grid-two-col">
-
                 {/* Person header row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -555,7 +605,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(sarahTotalM)}</div>
                 </div>
-
                 {/* Category rows — paired so each row shares height across both columns */}
                 {jimmyCats.flatMap((jimmyCat, ci) => {
                   const sarahCat = sarahCats[ci]
@@ -574,7 +623,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                     </div>,
                   ]
                 })}
-
               </div>
             )
           })()}
