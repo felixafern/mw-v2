@@ -974,7 +974,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                   <div key={form.key}>
                     {fi > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
                     {/* Current form row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: rowPad, alignItems: 'center', gap: 0 }}>
+                    <div className="form-row" style={{ display: 'grid', gridTemplateColumns: cols, padding: rowPad, alignItems: 'center', gap: 0 }}>
                       <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-1)' }}>{form.name}</span>
                       <span style={{ fontSize: 14, color: 'var(--text-2)' }}>{form.year}</span>
                       <span><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></span>
@@ -993,7 +993,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                     </div>
                     {/* History rows */}
                     {formsOpen[form.key] && form.history.map((h, hi) => (
-                      <div key={hi} style={{ display: 'grid', gridTemplateColumns: cols, padding: rowPad, alignItems: 'center', gap: 0, borderTop: '1px solid var(--border)' }}>
+                      <div key={hi} className="form-row" style={{ display: 'grid', gridTemplateColumns: cols, padding: rowPad, alignItems: 'center', gap: 0, borderTop: '1px solid var(--border)' }}>
                         <span style={{ fontSize: 13.5, color: 'var(--text-3)' }}>{form.name}</span>
                         <span style={{ fontSize: 13.5, color: 'var(--text-3)' }}>{h.year}</span>
                         <span><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></span>

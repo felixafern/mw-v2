@@ -294,6 +294,11 @@ body {
 .asset-sep  { color: var(--border-strong); }
 
 
+/* ── Form rows ── */
+
+.form-row { cursor: pointer; transition: background 0.1s; }
+.form-row:hover { background: var(--bg-2); }
+
 /* ── Toast ── */
 
 .ds-toast {
