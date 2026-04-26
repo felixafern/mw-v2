@@ -922,85 +922,90 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── Forms ── */}
       {activeTab === 'Forms' && (
-        <div className="ds-card" style={{ overflow: 'hidden' }}>
-          <table className="ds-table" style={{ tableLayout: 'fixed' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '40%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form</th>
-                <th style={{ width: '12%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Year</th>
-                <th style={{ width: '24%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Status</th>
-                <th style={{ width: '24%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Last updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                {
-                  initials: 'JJ', name: 'Jimmy Johnson',
-                  forms: [
-                    { key: 'jj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
-                      history: [
-                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
-                        { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '20 Jan 2023' },
-                      ] },
-                    { key: 'jj-risk', name: 'Risk Questionnaire', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '8 Jan 2026',
-                      history: [
-                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
-                        { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
-                      ] },
-                  ],
-                },
-                {
-                  initials: 'SJ', name: 'Sarah Johnson',
-                  forms: [
-                    { key: 'sj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
-                      history: [
-                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
-                      ] },
-                    { key: 'sj-risk', name: 'Risk Questionnaire', year: '2025', status: 'In Progress', statusClass: 'ds-badge-warn', updated: '29 Mar 2025',
-                      history: [
-                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
-                        { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
-                      ] },
-                  ],
-                },
-              ].flatMap(person => [
-                <tr key={`${person.name}-header`}>
-                  <td colSpan={4} style={{ padding: '12px 16px', background: 'var(--bg-2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
-                      <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[
+            {
+              initials: 'JJ', name: 'Jimmy Johnson',
+              forms: [
+                { key: 'jj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
+                  history: [
+                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
+                    { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '20 Jan 2023' },
+                  ] },
+                { key: 'jj-risk', name: 'Risk Questionnaire', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '8 Jan 2026',
+                  history: [
+                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
+                    { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
+                  ] },
+              ],
+            },
+            {
+              initials: 'SJ', name: 'Sarah Johnson',
+              forms: [
+                { key: 'sj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
+                  history: [
+                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
+                  ] },
+                { key: 'sj-risk', name: 'Risk Questionnaire', year: '2025', status: 'In Progress', statusClass: 'ds-badge-warn', updated: '29 Mar 2025',
+                  history: [
+                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
+                    { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
+                  ] },
+              ],
+            },
+          ].map(person => {
+            const cols = 'minmax(0,2fr) 80px minmax(0,1fr) minmax(0,1fr) 32px'
+            const rowPad = '16px 20px'
+            return (
+              <div key={person.name} className="ds-card">
+                {/* Person header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '18px 20px 14px' }}>
+                  <div className="ds-avatar">{person.initials}</div>
+                  <span style={{ fontWeight: 700, fontSize: 15.5, color: 'var(--text-1)' }}>{person.name}</span>
+                </div>
+                {/* Column labels */}
+                <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '0 20px 10px', gap: 0 }}>
+                  {['Form', 'Year', 'Status', 'Last Updated', ''].map(h => (
+                    <span key={h} style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{h}</span>
+                  ))}
+                </div>
+                {/* Form rows */}
+                {person.forms.map((form, fi) => (
+                  <div key={form.key}>
+                    {fi > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
+                    {/* Current form row */}
+                    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: rowPad, alignItems: 'center', gap: 0 }}>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-1)' }}>{form.name}</span>
+                      <span style={{ fontSize: 14, color: 'var(--text-2)' }}>{form.year}</span>
+                      <span><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></span>
+                      <span style={{ fontSize: 14, color: 'var(--text-3)' }}>{form.updated}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', justifySelf: 'end' }}><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
-                  </td>
-                </tr>,
-                ...person.forms.flatMap(form => [
-                  <tr key={form.key}>
-                    <td style={{ padding: '14px 16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <button
-                          onClick={() => setFormsOpen(o => ({ ...o, [form.key]: !o[form.key] }))}
-                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0, color: 'var(--text-3)' }}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formsOpen[form.key] ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="9 18 15 12 9 6"/></svg>
-                        </button>
-                        <span style={{ fontWeight: 600 }}>{form.name}</span>
+                    {/* Expand toggle */}
+                    <div style={{ padding: '0 20px 14px' }}>
+                      <button
+                        onClick={() => setFormsOpen(o => ({ ...o, [form.key]: !o[form.key] }))}
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: 4 }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formsOpen[form.key] ? 'none' : 'rotate(-90deg)', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                        {formsOpen[form.key] ? 'Hide' : 'Show'} previous responses
+                      </button>
+                    </div>
+                    {/* History rows */}
+                    {formsOpen[form.key] && form.history.map((h, hi) => (
+                      <div key={hi} style={{ display: 'grid', gridTemplateColumns: cols, padding: rowPad, alignItems: 'center', gap: 0, borderTop: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: 13.5, color: 'var(--text-3)' }}>{form.name}</span>
+                        <span style={{ fontSize: 13.5, color: 'var(--text-3)' }}>{h.year}</span>
+                        <span><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></span>
+                        <span style={{ fontSize: 13.5, color: 'var(--text-3)' }}>{h.updated}</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', justifySelf: 'end' }}><polyline points="9 18 15 12 9 6"/></svg>
                       </div>
-                    </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{form.year}</td>
-                    <td style={{ padding: '14px 16px' }}><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{form.updated}</td>
-                  </tr>,
-                  ...(formsOpen[form.key] ? form.history.map((h, hi) => (
-                    <tr key={`${form.key}-h${hi}`} style={{ background: 'var(--bg-2)' }}>
-                      <td style={{ padding: '14px 16px', paddingLeft: 35, color: 'var(--text-2)' }}>{form.name}</td>
-                      <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{h.year}</td>
-                      <td style={{ padding: '14px 16px' }}><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></td>
-                      <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{h.updated}</td>
-                    </tr>
-                  )) : []),
-                ]),
-              ])}
-            </tbody>
-          </table>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
         </div>
       )}
 
