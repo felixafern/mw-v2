@@ -966,7 +966,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 {/* Column labels */}
                 <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '0 20px 10px', gap: 0 }}>
                   {['Form', 'Year', 'Status', 'Last Updated', ''].map(h => (
-                    <span key={h} style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{h}</span>
+                    <span key={h} style={{ fontSize: 12.5, color: 'var(--text-2)', fontWeight: 500 }}>{h}</span>
                   ))}
                 </div>
                 {/* Form rows */}
