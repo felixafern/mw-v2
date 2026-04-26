@@ -419,3 +419,58 @@ body {
 ::-webkit-scrollbar         { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track   { background: transparent; }
 ::-webkit-scrollbar-thumb   { background: var(--border-strong); border-radius: 3px; }
+
+/* ── Responsive ── */
+
+/* Touch targets for coarse pointer (iPad/touch screens) */
+@media (pointer: coarse) {
+  .ds-btn        { min-height: 44px; }
+  .ds-btn-sm     { min-height: 36px; }
+  .ds-nav-item   { padding: 12px 8px; }
+  .ds-tab        { padding: 14px 4px; }
+  .ds-input,
+  .ds-select     { height: 44px; }
+  .ds-toggle     { width: 40px; height: 24px; border-radius: 12px; }
+  .ds-toggle::after { width: 18px; height: 18px; }
+  .ds-toggle.on::after { transform: translateX(16px); }
+}
+
+/* Responsive grid helpers */
+.r-grid-overview {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+}
+.r-grid-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
+  row-gap: 24px;
+}
+.r-grid-three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .r-grid-overview  { grid-template-columns: 1fr; }
+  .r-grid-two-col   { grid-template-columns: 1fr; }
+  .r-grid-three-col { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Responsive padding helpers */
+.r-header-pad { padding: 32px 40px 0; }
+.r-tabs-pad   { padding: 0 40px; margin-top: 24px; }
+.r-content-pad { padding: 28px 40px; }
+.r-page-pad   { padding: 32px 40px; }
+
+@media (max-width: 900px) {
+  .r-header-pad  { padding: 20px 20px 0; }
+  .r-tabs-pad    { padding: 0 20px; margin-top: 16px; }
+  .r-content-pad { padding: 20px 20px; }
+  .r-page-pad    { padding: 20px 20px; }
+}
+
+/* Tabs overflow on narrow */
+.ds-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }

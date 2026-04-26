@@ -1,0 +1,16 @@
+/* Scale-down viewport trick — desktop only */
+.app-root {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: var(--bg-2);
+}
+
+@media (min-width: 1280px) {
+  .app-root {
+    height: calc(100vh / 0.9);
+    width: calc(100% / 0.9);
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+}

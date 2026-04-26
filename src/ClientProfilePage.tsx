@@ -75,7 +75,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── White header zone: breadcrumb + name + tabs ── */}
       <div style={{ background: 'var(--bg)' }}>
-        <div style={{ padding: '32px 40px 0', maxWidth: 1750, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className="r-header-pad" style={{ maxWidth: 1750, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
           {/* Back button */}
           <button onClick={onBack} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-2)', padding: 0 }}>
@@ -117,7 +117,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         </div>
 
         {/* Tabs — outside the maxWidth container so border-bottom spans full width */}
-        <div className="ds-tabs" style={{ gap: 28, padding: '0 40px', marginTop: 24 }}>
+        <div className="ds-tabs r-tabs-pad" style={{ gap: 28 }}>
           {profileTabs.map(tab => (
             <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)} style={{ padding: '10px 4px' }}>{tab}</button>
           ))}
@@ -126,7 +126,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
       </div>
 
       {/* ── Content zone ── */}
-      <div style={{ padding: '28px 40px', maxWidth: 1750, margin: '0 auto', width: '100%' }}>
+      <div className="r-content-pad" style={{ maxWidth: 1750, margin: '0 auto', width: '100%' }}>
 
       {/* Overview tab */}
       {activeTab === 'Overview' && (() => {
@@ -142,7 +142,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 24 }}>
+          <div className="r-grid-overview">
 
           {/* LEFT COLUMN */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -517,7 +517,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
           {/* ── Section 1: Headline figures ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          <div className="r-grid-three-col">
             {([
               { label: 'Total assets', value: fmt(aM) },
               { label: 'Total liabilities', value: `−${fmt(lM)}` },
@@ -538,7 +538,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 return s + raw
               }, 0))
             return (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 20, rowGap: 24 }}>
+              <div className="r-grid-two-col">
 
                 {/* Person header row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
