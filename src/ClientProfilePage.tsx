@@ -926,11 +926,10 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           <table className="ds-table" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th style={{ width: '38%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form</th>
+                <th style={{ width: '40%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form</th>
                 <th style={{ width: '12%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Year</th>
-                <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Status</th>
+                <th style={{ width: '24%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Status</th>
                 <th style={{ width: '24%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Last updated</th>
-                <th style={{ width: '4%', padding: '14px 16px' }} />
               </tr>
             </thead>
             <tbody>
@@ -938,51 +937,67 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 {
                   initials: 'JJ', name: 'Jimmy Johnson',
                   forms: [
-                    { key: 'jj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026' },
-                    { key: 'jj-risk', name: 'Risk Questionnaire', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '8 Jan 2026' },
+                    { key: 'jj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
+                      history: [
+                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
+                        { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '20 Jan 2023' },
+                      ] },
+                    { key: 'jj-risk', name: 'Risk Questionnaire', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '8 Jan 2026',
+                      history: [
+                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
+                        { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
+                      ] },
                   ],
                 },
                 {
                   initials: 'SJ', name: 'Sarah Johnson',
                   forms: [
-                    { key: 'sj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026' },
-                    { key: 'sj-risk', name: 'Risk Questionnaire', year: '2025', status: 'In Progress', statusClass: 'ds-badge-warn', updated: '29 Mar 2025' },
+                    { key: 'sj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
+                      history: [
+                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
+                      ] },
+                    { key: 'sj-risk', name: 'Risk Questionnaire', year: '2025', status: 'In Progress', statusClass: 'ds-badge-warn', updated: '29 Mar 2025',
+                      history: [
+                        { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
+                        { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
+                      ] },
                   ],
                 },
               ].flatMap(person => [
                 <tr key={`${person.name}-header`}>
-                  <td colSpan={5} style={{ padding: '12px 16px', background: 'var(--bg-2)' }}>
+                  <td colSpan={4} style={{ padding: '12px 16px', background: 'var(--bg-2)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
                       <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
                     </div>
                   </td>
                 </tr>,
-                ...person.forms.map(form => {
-                  const isStale = form.statusClass === 'ds-badge-warn'
-                  return (
-                    <tr key={form.key} style={{ cursor: 'pointer', background: isStale ? 'rgba(217, 119, 6, 0.04)' : undefined }}>
-                      <td style={{ fontWeight: 600, padding: '16px 16px' }}>{form.name}</td>
-                      <td style={{ padding: '16px 16px', color: 'var(--text-3)' }}>{form.year}</td>
-                      <td style={{ padding: '16px 16px' }}><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></td>
-                      <td style={{ padding: '16px 16px' }}>
-                        {isStale ? (
-                          <div>
-                            <div style={{ fontSize: 13.5, color: 'var(--warn)' }}>{form.updated}</div>
-                            <button style={{ background: 'none', border: 'none', padding: 0, marginTop: 2, cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--warn)', display: 'flex', alignItems: 'center', gap: 2 }}>
-                              Send reminder →
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="td-muted">{form.updated}</span>
-                        )}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 16px' }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)' }}><polyline points="9 18 15 12 9 6"/></svg>
-                      </td>
+                ...person.forms.flatMap(form => [
+                  <tr key={form.key}>
+                    <td style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                          onClick={() => setFormsOpen(o => ({ ...o, [form.key]: !o[form.key] }))}
+                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0, color: 'var(--text-3)' }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formsOpen[form.key] ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <span style={{ fontWeight: 600 }}>{form.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{form.year}</td>
+                    <td style={{ padding: '14px 16px' }}><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{form.updated}</td>
+                  </tr>,
+                  ...(formsOpen[form.key] ? form.history.map((h, hi) => (
+                    <tr key={`${form.key}-h${hi}`} style={{ background: 'var(--bg-2)' }}>
+                      <td style={{ padding: '14px 16px', paddingLeft: 35, color: 'var(--text-2)' }}>{form.name}</td>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{h.year}</td>
+                      <td style={{ padding: '14px 16px' }}><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></td>
+                      <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{h.updated}</td>
                     </tr>
-                  )
-                }),
+                  )) : []),
+                ]),
               ])}
             </tbody>
           </table>
