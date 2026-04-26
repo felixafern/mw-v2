@@ -1,0 +1,60 @@
+/* ============================================================
+   Design tokens
+   Generated from design-workbench
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+
+  /* Surface */
+  --bg:              #ffffff;
+  --bg-2:            #fcfcfd;
+  --bg-3:            #ebebec;
+  --bg-hover:        #e2e2e3;
+
+  /* Borders */
+  --border:          rgba(0, 0, 0, 0.07);
+  --border-md:       rgba(0, 0, 0, 0.11);
+  --border-strong:   rgba(0, 0, 0, 0.18);
+
+  /* Text */
+  --text-1:          #111111;
+  --text-2:          #6b6b6b;
+  --text-3:          #a3a3a3;
+
+  /* Accent */
+  --accent:          #4f6ef7;
+  --accent-bg:       #eef2ff;
+  --accent-text:     #2348c8;
+
+  /* Success */
+  --success:         #16a34a;
+  --success-bg:      #f0fdf4;
+  --success-border:  rgba(22, 163, 74, 0.2);
+  --success-text:    #15803d;
+
+  /* Warning */
+  --warn:            #d97706;
+  --warn-bg:         #fffbeb;
+  --warn-border:     rgba(217, 119, 6, 0.2);
+  --warn-text:       #92400e;
+
+  /* Danger */
+  --danger:          #ef4444;
+  --danger-bg:       #fef2f2;
+  --danger-border:   rgba(239, 68, 68, 0.2);
+  --danger-text:     #b91c1c;
+
+  /* Radius */
+  --radius-sm:       4px;
+  --radius-md:       6px;
+  --radius-lg:       8px;
+  --radius-xl:       12px;
+
+  /* Shadow */
+  --shadow-sm:       0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05);
+
+  /* Typography */
+  --font:            'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
