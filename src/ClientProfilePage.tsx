@@ -951,7 +951,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 },
               ].flatMap(person => [
                 <tr key={`${person.name}-header`}>
-                  <td colSpan={5} style={{ padding: '12px 16px', background: 'var(--bg-2)', borderTop: '1px solid var(--border)' }}>
+                  <td colSpan={5} style={{ padding: '12px 16px', background: 'var(--bg-2)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
                       <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
