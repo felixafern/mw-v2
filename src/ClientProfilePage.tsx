@@ -922,104 +922,70 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── Forms ── */}
       {activeTab === 'Forms' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {[
-            {
-              initials: 'JJ', name: 'Jimmy Johnson',
-              forms: [
+        <div className="ds-card" style={{ overflow: 'hidden' }}>
+          <table className="ds-table" style={{ tableLayout: 'fixed' }}>
+            <thead>
+              <tr>
+                <th style={{ width: '38%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form</th>
+                <th style={{ width: '12%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Year</th>
+                <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Status</th>
+                <th style={{ width: '24%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Last updated</th>
+                <th style={{ width: '4%', padding: '14px 16px' }} />
+              </tr>
+            </thead>
+            <tbody>
+              {[
                 {
-                  key: 'jj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
-                  history: [
-                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
-                    { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '20 Jan 2023' },
+                  initials: 'JJ', name: 'Jimmy Johnson',
+                  forms: [
+                    { key: 'jj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026' },
+                    { key: 'jj-risk', name: 'Risk Questionnaire', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '8 Jan 2026' },
                   ],
                 },
                 {
-                  key: 'jj-risk', name: 'Risk Questionnaire', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '8 Jan 2026',
-                  history: [
-                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
-                    { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
+                  initials: 'SJ', name: 'Sarah Johnson',
+                  forms: [
+                    { key: 'sj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026' },
+                    { key: 'sj-risk', name: 'Risk Questionnaire', year: '2025', status: 'In Progress', statusClass: 'ds-badge-warn', updated: '29 Mar 2025' },
                   ],
                 },
-              ],
-            },
-            {
-              initials: 'SJ', name: 'Sarah Johnson',
-              forms: [
-                {
-                  key: 'sj-fact', name: 'Fact Find', year: '2025', status: 'Complete', statusClass: 'ds-badge-success', updated: '23 Jan 2026',
-                  history: [
-                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '15 Feb 2024' },
-                  ],
-                },
-                {
-                  key: 'sj-risk', name: 'Risk Questionnaire', year: '2025', status: 'In Progress', statusClass: 'ds-badge-warn', updated: '29 Mar 2025',
-                  history: [
-                    { year: '2024', status: 'Complete', statusClass: 'ds-badge-success', updated: '14 Feb 2024' },
-                    { year: '2023', status: 'Complete', statusClass: 'ds-badge-success', updated: '3 Feb 2023' },
-                  ],
-                },
-              ],
-            },
-          ].map((person, pi) => (
-            <div key={person.name} style={{ marginTop: pi > 0 ? 24 : 0 }}>
-              {/* Person label — outside the card */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
-                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
-              </div>
-              <div className="ds-card">
-              <table className="ds-table" style={{ tableLayout: 'fixed' }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: '40%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form</th>
-                    <th style={{ width: '12%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Year</th>
-                    <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Status</th>
-                    <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Last Updated</th>
-                    <th style={{ width: '4%', padding: '14px 16px' }} />
-                  </tr>
-                </thead>
-                <tbody>
-                  {person.forms.map(form => (
-                    <>
-                      <tr key={form.key} style={{ cursor: 'pointer' }}>
-                        <td style={{ fontWeight: 600, padding: '16px 16px' }}>{form.name}</td>
-                        <td style={{ padding: '16px 16px' }}>{form.year}</td>
-                        <td style={{ padding: '16px 16px' }}><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></td>
-                        <td className="td-muted" style={{ padding: '16px 16px' }}>{form.updated}</td>
-                        <td style={{ textAlign: 'right', padding: '16px 16px' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)' }}><polyline points="9 18 15 12 9 6"/></svg>
-                        </td>
-                      </tr>
-                      <tr key={`${form.key}-expand`}>
-                        <td colSpan={5} style={{ padding: '10px 16px', background: 'var(--bg-2)' }}>
-                          <button
-                            onClick={() => setFormsOpen(o => ({ ...o, [form.key]: !o[form.key] }))}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--accent)', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
-                          >
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formsOpen[form.key] ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="9 18 15 12 9 6"/></svg>
-                            {formsOpen[form.key] ? 'Hide' : 'View'} previous responses
-                          </button>
-                        </td>
-                      </tr>
-                      {formsOpen[form.key] && form.history.map((h, hi) => (
-                        <tr key={`${form.key}-h${hi}`} style={{ opacity: 0.65 }}>
-                          <td style={{ color: 'var(--text-2)', padding: '16px 16px', paddingLeft: 28 }}>{form.name}</td>
-                          <td className="td-muted" style={{ padding: '16px 16px' }}>{h.year}</td>
-                          <td style={{ padding: '16px 16px' }}><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></td>
-                          <td className="td-muted" style={{ padding: '16px 16px' }}>{h.updated}</td>
-                          <td style={{ textAlign: 'right', padding: '16px 16px' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)' }}><polyline points="9 18 15 12 9 6"/></svg>
-                          </td>
-                        </tr>
-                      ))}
-                    </>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            </div>
-          ))}
+              ].flatMap(person => [
+                <tr key={`${person.name}-header`}>
+                  <td colSpan={5} style={{ padding: '12px 16px', background: 'var(--bg-2)', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
+                      <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
+                    </div>
+                  </td>
+                </tr>,
+                ...person.forms.map(form => {
+                  const isStale = form.statusClass === 'ds-badge-warn'
+                  return (
+                    <tr key={form.key} style={{ cursor: 'pointer', background: isStale ? 'rgba(217, 119, 6, 0.04)' : undefined }}>
+                      <td style={{ fontWeight: 600, padding: '16px 16px' }}>{form.name}</td>
+                      <td style={{ padding: '16px 16px', color: 'var(--text-3)' }}>{form.year}</td>
+                      <td style={{ padding: '16px 16px' }}><span className={`ds-badge ${form.statusClass}`}>{form.status}</span></td>
+                      <td style={{ padding: '16px 16px' }}>
+                        {isStale ? (
+                          <div>
+                            <div style={{ fontSize: 13.5, color: 'var(--warn)' }}>{form.updated}</div>
+                            <button style={{ background: 'none', border: 'none', padding: 0, marginTop: 2, cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--warn)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                              Send reminder →
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="td-muted">{form.updated}</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 16px' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)' }}><polyline points="9 18 15 12 9 6"/></svg>
+                      </td>
+                    </tr>
+                  )
+                }),
+              ])}
+            </tbody>
+          </table>
         </div>
       )}
 
