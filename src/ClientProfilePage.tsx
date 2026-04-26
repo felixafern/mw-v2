@@ -961,22 +961,22 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 },
               ],
             },
-          ].map(person => (
-            <div key={person.name} className="ds-card">
-              <div className="ds-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
-                </div>
+          ].map((person, pi) => (
+            <div key={person.name} style={{ marginTop: pi > 0 ? 24 : 0 }}>
+              {/* Person label — outside the card */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
+                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
               </div>
+              <div className="ds-card">
               <table className="ds-table" style={{ tableLayout: 'fixed' }}>
                 <thead>
                   <tr>
-                    <th style={{ width: '40%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form</th>
-                    <th style={{ width: '12%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Year</th>
-                    <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Status</th>
-                    <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Last Updated</th>
-                    <th style={{ width: '4%', padding: '14px 16px' }} />
+                    <th style={{ width: '40%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, background: 'var(--bg-3)' }}>Form</th>
+                    <th style={{ width: '12%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, background: 'var(--bg-3)' }}>Year</th>
+                    <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, background: 'var(--bg-3)' }}>Status</th>
+                    <th style={{ width: '22%', padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, background: 'var(--bg-3)' }}>Last Updated</th>
+                    <th style={{ width: '4%', padding: '14px 16px', background: 'var(--bg-3)' }} />
                   </tr>
                 </thead>
                 <tbody>
@@ -992,10 +992,10 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                         </td>
                       </tr>
                       <tr key={`${form.key}-expand`}>
-                        <td colSpan={5} style={{ padding: '10px 16px', background: 'var(--bg-2)' }}>
+                        <td colSpan={5} style={{ padding: '8px 16px', background: 'var(--bg-3)', borderTop: '1px solid var(--border)' }}>
                           <button
                             onClick={() => setFormsOpen(o => ({ ...o, [form.key]: !o[form.key] }))}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--accent)', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--text-2)', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
                           >
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: formsOpen[form.key] ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="9 18 15 12 9 6"/></svg>
                             {formsOpen[form.key] ? 'Hide' : 'View'} previous responses
@@ -1003,12 +1003,12 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                         </td>
                       </tr>
                       {formsOpen[form.key] && form.history.map((h, hi) => (
-                        <tr key={`${form.key}-h${hi}`} style={{ opacity: 0.65 }}>
-                          <td style={{ color: 'var(--text-2)', padding: '16px 16px', paddingLeft: 28 }}>{form.name}</td>
-                          <td className="td-muted" style={{ padding: '16px 16px' }}>{h.year}</td>
-                          <td style={{ padding: '16px 16px' }}><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></td>
-                          <td className="td-muted" style={{ padding: '16px 16px' }}>{h.updated}</td>
-                          <td style={{ textAlign: 'right', padding: '16px 16px' }}>
+                        <tr key={`${form.key}-h${hi}`} style={{ background: 'var(--bg-3)' }}>
+                          <td style={{ color: 'var(--text-2)', padding: '13px 16px', paddingLeft: 28, fontSize: 13.5 }}>{form.name}</td>
+                          <td style={{ padding: '13px 16px', color: 'var(--text-3)', fontSize: 13.5 }}>{h.year}</td>
+                          <td style={{ padding: '13px 16px' }}><span className={`ds-badge ${h.statusClass}`}>{h.status}</span></td>
+                          <td style={{ padding: '13px 16px', color: 'var(--text-3)', fontSize: 13.5 }}>{h.updated}</td>
+                          <td style={{ textAlign: 'right', padding: '13px 16px' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)' }}><polyline points="9 18 15 12 9 6"/></svg>
                           </td>
                         </tr>
@@ -1017,6 +1017,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                   ))}
                 </tbody>
               </table>
+            </div>
             </div>
           ))}
         </div>
