@@ -344,10 +344,11 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               <div style={{ padding: '0 18px 4px', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.65 }}>
                 Reviewed pension consolidation for Jimmy and ISA strategy for Sarah. Recommended increasing Jimmy's SIPP contributions to maximise annual allowance.
               </div>
-              <div style={{ padding: '10px 18px 14px' }}>
+              <div style={{ padding: '10px 18px 14px', display: 'flex', gap: 8 }}>
                 <button onClick={() => setLetterExpanded(e => !e)} className="ds-btn ds-btn-secondary" style={{ fontSize: 13 }}>
                   {letterExpanded ? 'Collapse' : 'Preview'}
                 </button>
+                <button className="ds-btn ds-btn-secondary" style={{ fontSize: 13 }}>Open full letter</button>
               </div>
               {letterExpanded && (
                 <div style={{ borderTop: '1px solid var(--border)', padding: '14px 18px', background: 'var(--bg-1)', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: 10 }}>
