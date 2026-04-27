@@ -361,7 +361,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                       </div>
                     ))}
                   </div>
-                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 13, color: 'var(--accent)', padding: 0, textAlign: 'left', fontWeight: 500 }}>Open full letter →</button>
                 </div>
               )}
             </div>
