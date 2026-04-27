@@ -334,23 +334,23 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
             {/* Last advice letter — inline preview */}
             <div className="ds-card" style={{ overflow: 'hidden' }}>
-              <div style={{ padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-2)' }}>
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>Last advice letter</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>14 Mar 2025</span>
-                </div>
-                <button onClick={() => setLetterExpanded(e => !e)} style={{ background: 'none', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12, fontWeight: 500, color: 'var(--accent)', padding: '3px 10px', whiteSpace: 'nowrap' }}>
+              <div style={{ padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-2)' }}>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>Last advice letter</span>
+                <span style={{ fontSize: 12, color: 'var(--text-3)' }}>14 Mar 2025</span>
+              </div>
+              <div style={{ padding: '0 18px 4px', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.65 }}>
+                Reviewed pension consolidation for Jimmy and ISA strategy for Sarah. Recommended increasing Jimmy's SIPP contributions to maximise annual allowance.
+              </div>
+              <div style={{ padding: '10px 18px 14px' }}>
+                <button onClick={() => setLetterExpanded(e => !e)} className="ds-btn ds-btn-secondary" style={{ fontSize: 13 }}>
                   {letterExpanded ? 'Collapse' : 'Preview'}
                 </button>
               </div>
-              <div style={{ padding: '0 18px 14px', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.65 }}>
-                Reviewed pension consolidation for Jimmy and ISA strategy for Sarah. Recommended increasing Jimmy's SIPP contributions to maximise annual allowance.
-              </div>
               {letterExpanded && (
-                <div style={{ borderTop: '1px solid var(--border)', padding: '14px 18px', background: 'var(--bg-2)', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ borderTop: '1px solid var(--border)', padding: '14px 18px', background: 'var(--bg-1)', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.7, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div>Key narrative: clients keen to retire at 60 — cashflow modelling showed a £240k shortfall under current trajectory. Agreed to review pension contributions annually and revisit the model at next meeting.</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-2)' }}>Actions agreed</div>
