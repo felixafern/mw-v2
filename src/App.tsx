@@ -15,9 +15,9 @@ function App() {
         {!collapsed && (
           <div className="ds-sidebar-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, overflow: 'hidden', padding: '0 0 8px' }}>
             <img src={ottoLogo} alt="" style={{ height: 64, width: 64, flexShrink: 0, objectFit: 'contain' }} />
-            <button onClick={() => setCollapsed(true)} style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-3)', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
+            <button onClick={() => setCollapsed(true)} className="ds-sidebar-toggle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/>
               </svg>
             </button>
           </div>
@@ -26,9 +26,9 @@ function App() {
           <div className="ds-nav-group">
             {/* When collapsed: expand button sits inline above/beside nav item */}
             {collapsed && (
-              <button onClick={() => setCollapsed(false)} style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-3)', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, marginLeft: 'auto', marginRight: 'auto' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
+              <button onClick={() => setCollapsed(false)} className="ds-sidebar-toggle" style={{ marginBottom: 10 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m13 9 3 3-3 3"/>
                 </svg>
               </button>
             )}

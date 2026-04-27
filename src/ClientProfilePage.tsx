@@ -20,6 +20,8 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   const [softFactsExpanded, setSoftFactsExpanded] = useState(false)
   const [letterExpanded, setLetterExpanded] = useState(false)
   const [riskMenuOpen, setRiskMenuOpen] = useState<string | null>(null)
+  const [holdingsFilter, setHoldingsFilter] = useState<'assets' | 'liabilities'>('assets')
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set())
   const [isNarrow, setIsNarrow] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900)
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 900px)')
@@ -82,17 +84,17 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── White header zone: breadcrumb + name + tabs ── */}
       <div style={{ background: 'var(--bg)' }}>
-        <div className="r-header-pad" style={{ maxWidth: 1750, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className="r-header-pad" style={{ maxWidth: 1750, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 30 }}>
 
           {/* Back button */}
-          <button onClick={onBack} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-2)', padding: 0 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Clients
+          <button onClick={onBack} className="ds-btn ds-btn-secondary ds-btn-sm" style={{ gap: 6, alignSelf: 'flex-start' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back
           </button>
 
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
               {client.spouseInitials ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, height: 44 }}>
                   {(['primary', 'spouse', 'household'] as const).map((member) => {
@@ -100,7 +102,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                     const size = isActive ? 42 : 34
                     const label = member === 'primary' ? client.initials : member === 'spouse' ? client.spouseInitials : null
                     return (
-                      <div key={member} className="ds-avatar" onClick={() => setActiveMember(member)} style={{ width: size, height: size, fontSize: size * 0.35, cursor: 'pointer', background: isActive ? 'var(--bg-hover)' : 'var(--bg-3)', color: isActive ? 'var(--text-1)' : 'var(--text-3)', transition: 'all 0.15s' }}>
+                      <div key={member} className="ds-avatar" onClick={() => setActiveMember(member)} style={{ width: size, height: size, fontSize: size * 0.35, cursor: 'pointer', background: isActive ? '#d8dff0' : '#e6eaf3', color: isActive ? '#3d5070' : '#5e6e90', transition: 'all 0.15s' }}>
                         {label ?? (
                           <svg width={size * 0.52} height={size * 0.52} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
@@ -124,9 +126,9 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         </div>
 
         {/* Tabs — outside the maxWidth container so border-bottom spans full width */}
-        <div className="ds-tabs r-tabs-pad" style={{ gap: 28 }}>
+        <div className="ds-tabs r-tabs-pad">
           {profileTabs.map(tab => (
-            <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)} style={{ padding: '10px 4px' }}>{tab}</button>
+            <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
           ))}
         </div>
 
@@ -147,12 +149,12 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           "Both keen golfers — useful rapport-builder",
         ]
         return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
           <div className="r-grid-overview">
 
           {/* LEFT COLUMN */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
             {/* Stat cards — prominent figures */}
             <div style={{ display: 'flex', gap: 12 }}>
@@ -183,14 +185,14 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {/* Active prompts — always visible, flagged */}
                 {activePrompts.map((fact, i) => (
-                  <div key={`p${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--warn-bg)', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
+                  <div key={`p${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--warn-bg)', borderRadius: 'var(--radius-md)', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--warn-text)', flexShrink: 0, marginTop: 3 }}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
                     {fact}
                   </div>
                 ))}
                 {/* Relationship intelligence — collapsible */}
                 {softFactsExpanded && intelFacts.map((fact, i) => (
-                  <div key={`r${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
+                  <div key={`r${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--bg-2)', borderRadius: 'var(--radius-md)', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 7 }} />
                     {fact}
                   </div>
@@ -207,79 +209,92 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               <div className="ds-card-header">
                 <div className="ds-card-title">Personal details</div>
               </div>
-              <div style={{ padding: '4px 18px 10px' }}>
-                {activeMember === 'household' ? (
-                  <>
-                    {/* Two-column member layout */}
-                    <div style={{ display: 'flex', gap: 0, margin: '8px 0 0' }}>
-                      {/* Primary column */}
-                      <div style={{ flex: 1, paddingRight: 18, borderRight: '1px solid var(--border)' }}>
-                        {[
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, value: <span style={{ fontWeight: 600 }}>{client.name}</span> },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, value: `54 · ${client.dob}` },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>, value: memberData.primary.occupation },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, value: memberData.primary.income },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, value: client.idExpiry ? <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--danger)' }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--danger)', display: 'inline-block', flexShrink: 0 }} />{client.idExpiry}</span> : '—' },
-                        ].map((row, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0' }}>
-                            <span style={{ color: 'var(--text-2)', display: 'flex', alignItems: 'center', flexShrink: 0, width: 16 }}>{row.icon}</span>
-                            <span style={{ fontSize: 13.5, color: 'var(--text-1)' }}>{row.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {/* Spouse column */}
-                      <div style={{ flex: 1, paddingLeft: 18 }}>
-                        {[
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, value: <span style={{ fontWeight: 600 }}>{client.spouseName}</span> },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, value: `52 · ${client.spouseDob}` },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>, value: client.spouseOccupation },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, value: client.spouseIncome },
-                          { icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, value: client.spouseIdExpiry ?? '—' },
-                        ].map((row, i) => (
-                          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0' }}>
-                            <span style={{ color: 'var(--text-2)', display: 'flex', alignItems: 'center', flexShrink: 0, width: 16 }}>{row.icon}</span>
-                            <span style={{ fontSize: 13.5, color: 'var(--text-1)' }}>{row.value}</span>
-                          </div>
-                        ))}
-                      </div>
+              <div style={{ padding: '4px 20px 18px' }}>
+                {(() => {
+                  const Field = ({ label, children }: { label: string; children: ReactNode }) => (
+                    <div style={{ borderLeft: '2px solid var(--border)', paddingLeft: 10 }}>
+                      <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginBottom: 3, fontWeight: 500 }}>{label}</div>
+                      <div style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500, lineHeight: 1.3 }}>{children}</div>
                     </div>
-                    {/* Household shared rows */}
-                    <div style={{ borderTop: '1px solid var(--border)', marginTop: 8, paddingTop: 4 }}>
-                      <PersonalRow label="Marital Status" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>}>Married</PersonalRow>
-                      <PersonalRow label="Children" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>Oliver (14), Emily (11), Mia (8)</PersonalRow>
+                  )
+                  const IdExpiry = ({ expiry, warn }: { expiry?: string; warn?: boolean }) => expiry
+                    ? warn
+                      ? <span style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--danger)', display: 'inline-block', flexShrink: 0 }} />{expiry}</span>
+                      : <>{expiry}</>
+                    : <>—</>
+
+                  const MemberHeader = ({ initials, name }: { initials: string; name: string }) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                      <div className="ds-avatar" style={{ width: 32, height: 32, fontSize: 12, flexShrink: 0 }}>{initials}</div>
+                      <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{name}</span>
                     </div>
-                  </>
-                ) : (() => {
-                    const pmd = activeMember === 'spouse' ? memberData.spouse : memberData.primary
+                  )
+
+                  if (activeMember === 'household') {
                     return (
                       <>
-                        <PersonalRow label="Age & DOB" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}>{pmd.age} · {pmd.dob}</PersonalRow>
-                        <PersonalRow label="Occupation" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>}>{pmd.occupation}</PersonalRow>
-                        <PersonalRow label="Income" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}>{pmd.income}</PersonalRow>
-                        <PersonalRow label="ID Expiry" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>}>
-                          {activeMember === 'primary' && pmd.idExpiry === 'Jan 2026'
-                            ? <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--danger)' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--danger)', display: 'inline-block', flexShrink: 0 }} />{pmd.idExpiry}</span>
-                            : pmd.idExpiry ?? '—'}
-                        </PersonalRow>
-                        <PersonalRow label="Marital Status" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>}>{pmd.maritalStatus}</PersonalRow>
-                        {pmd.children && <PersonalRow label="Children" icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>{pmd.children}</PersonalRow>}
+                        <div style={{ display: 'flex', gap: 0 }}>
+                          {/* Jimmy column */}
+                          <div style={{ flex: 1, paddingRight: 20 }}>
+                            <MemberHeader initials={client.initials} name={client.name} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                              <Field label="Age & DOB">54 · {client.dob}</Field>
+                              <Field label="Occupation">{memberData.primary.occupation}</Field>
+                              <Field label="Income">{memberData.primary.income}</Field>
+                              <Field label="ID Expiry"><IdExpiry expiry={client.idExpiry} warn /></Field>
+                            </div>
+                          </div>
+                          {/* Sarah column */}
+                          <div style={{ flex: 1, paddingLeft: 20 }}>
+                            <MemberHeader initials={client.spouseInitials ?? ''} name={client.spouseName ?? ''} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                              <Field label="Age & DOB">52 · {client.spouseDob}</Field>
+                              <Field label="Occupation">{client.spouseOccupation}</Field>
+                              <Field label="Income">{client.spouseIncome}</Field>
+                              <Field label="ID Expiry"><IdExpiry expiry={client.spouseIdExpiry} /></Field>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Shared fields */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                          <Field label="Marital Status">{memberData.primary.maritalStatus}</Field>
+                          {memberData.primary.children && <Field label="Children">{memberData.primary.children}</Field>}
+                        </div>
                       </>
                     )
-                  })()}
+                  }
+
+                  const pmd = activeMember === 'spouse' ? memberData.spouse : memberData.primary
+                  const initials = activeMember === 'spouse' ? (client.spouseInitials ?? '') : client.initials
+                  const name = activeMember === 'spouse' ? (client.spouseName ?? '') : client.name
+                  return (
+                    <>
+                      <MemberHeader initials={initials} name={name} />
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
+                        <Field label="Age & DOB">{pmd.age} · {pmd.dob}</Field>
+                        <Field label="Occupation">{pmd.occupation}</Field>
+                        <Field label="Income">{pmd.income}</Field>
+                        <Field label="ID Expiry"><IdExpiry expiry={pmd.idExpiry} warn={activeMember === 'primary' && pmd.idExpiry === 'Jan 2026'} /></Field>
+                        <Field label="Marital Status">{pmd.maritalStatus}</Field>
+                        {pmd.children && <Field label="Children">{pmd.children}</Field>}
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
             </div>
 
           </div>
 
           {/* RIGHT COLUMN */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
             {/* Next meeting */}
             <div className="ds-card">
               {/* Top: date + title + time */}
               <div style={{ padding: '18px 20px', display: 'flex', gap: 18, alignItems: 'flex-start' }}>
                 {/* Date block */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '8px 14px', flexShrink: 0, minWidth: 56 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg-2)', borderRadius: 'var(--radius-md)', padding: '8px 14px', flexShrink: 0, minWidth: 56 }}>
                   <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>Feb</span>
                   <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.1, letterSpacing: '-0.03em', marginTop: 2 }}>28</span>
                 </div>
@@ -438,240 +453,236 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         const lM = lK / 1000
         const nwM = aM - lM
         const fmt = (v: number) => v >= 1 ? `£${+v.toFixed(1)}M` : `£${Math.round(v * 1000)}k`
+        const fmtPct = (v: number) => `${Math.round(v * 100)}%`
         const pensM = aM * 0.52, propM = aM * 0.29, invM = aM * 0.13, savM = aM - pensM - propM - invM
         const mortM = lM * 0.862, jimmyCrM = lM * 0.086, sarahCrM = lM * 0.052
 
-        // Individual totals (excl. joint property)
-        const jimmyTotalM = pensM * 0.77 + invM * 0.58 + savM * 0.6
-        const sarahTotalM = pensM * 0.23 + invM * 0.42 + savM * 0.4
+        type HoldingRow = { name: string; provider: string; owner: string; value: number }
+        type AssetCat = { label: string; color: string; holdings: HoldingRow[] }
 
-        type HoldingDetail = { l: string; v: string }
-        type Holding = { provider: string; type: string; value: string; meta: string | null; details: HoldingDetail[] }
-        type LiabilityHolding = Holding & { attribution: string }
-        type Category = { label: string; color: string; holdings: Holding[] }
+        const assetCats: AssetCat[] = [
+          { label: 'Pensions', color: '#7c3aed', holdings: [
+            { name: 'Standard Life', provider: 'SIPP', owner: 'Jimmy', value: pensM * 0.62 },
+            { name: 'Nest', provider: 'Workplace pension', owner: 'Jimmy', value: pensM * 0.15 },
+            { name: 'Aviva', provider: 'SIPP', owner: 'Sarah', value: pensM * 0.23 },
+          ]},
+          { label: 'Property', color: '#0ea5e9', holdings: [
+            { name: 'Primary Residence', provider: 'Property', owner: 'Joint', value: propM },
+          ]},
+          { label: 'Investments', color: '#3b82f6', holdings: [
+            { name: 'Hargreaves Lansdown', provider: 'ISA', owner: 'Jimmy', value: invM * 0.58 },
+            { name: 'Hargreaves Lansdown', provider: 'ISA', owner: 'Sarah', value: invM * 0.42 },
+          ]},
+          { label: 'Savings & Cash', color: '#16a34a', holdings: [
+            { name: 'Nationwide', provider: 'Current & Savings', owner: 'Jimmy', value: savM * 0.6 },
+            { name: 'Barclays', provider: 'Savings', owner: 'Sarah', value: savM * 0.4 },
+          ]},
+        ]
 
-        // Helpers
-        const catIcons: Record<string, ReactNode> = {
-          'Pensions':       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
-          'Property':       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-          'Investments':    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-          'Savings & Cash': <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+        const liabCats: AssetCat[] = [
+          { label: 'Mortgage', color: '#ef4444', holdings: [
+            { name: 'Nationwide', provider: 'Mortgage', owner: 'Joint', value: mortM },
+          ]},
+          { label: 'Credit Cards', color: '#f97316', holdings: [
+            { name: 'HSBC', provider: 'Credit Card', owner: 'Jimmy', value: jimmyCrM },
+            { name: 'Barclays', provider: 'Credit Card', owner: 'Sarah', value: sarahCrM },
+          ]},
+        ]
+
+        const activeCats = holdingsFilter === 'assets' ? assetCats : liabCats
+        const totalBase = holdingsFilter === 'assets' ? aM : lM
+
+        const toggleCat = (label: string) => {
+          setExpandedCats(prev => {
+            const next = new Set(prev)
+            if (next.has(label)) next.delete(label)
+            else next.add(label)
+            return next
+          })
         }
-        const renderCatHeader = (label: string, total: string) => (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-2)' }}>
-              {catIcons[label] ?? null}
-              <span style={{ fontSize: 15, fontWeight: 500 }}>{label}</span>
-            </div>
-            <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>{total}</span>
-          </div>
-        )
-
-        const renderCard = (h: Holding | LiabilityHolding, cardKey: string, attribution?: string) => (
-          <div key={cardKey} className="ds-card">
-            <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{h.provider}</span>
-                  {attribution && (
-                    <span className="ds-badge ds-badge-default" style={{ fontSize: 11 }}>{attribution}</span>
-                  )}
-                </div>
-                <div style={{ fontSize: 12.5, color: 'var(--text-2)' }}>{h.type}</div>
-              </div>
-              <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)', whiteSpace: 'nowrap', flexShrink: 0 }}>{h.value}</span>
-            </div>
-          </div>
-        )
-
-        const jimmyCats: Category[] = [
-          { label: 'Pensions', color: '#7c3aed', holdings: [
-            { provider: 'Standard Life', type: 'SIPP', value: fmt(pensM * 0.62), meta: 'Uncrystallised', details: [{ l: 'Tax-Free Cash', v: fmt(pensM * 0.62 * 0.25) }, { l: 'MPAA Status', v: 'Not Triggered' }] },
-            { provider: 'Nest', type: 'Workplace pension', value: fmt(pensM * 0.15), meta: 'Active — current employer', details: [] },
-          ]},
-          { label: 'Investments', color: '#3b82f6', holdings: [
-            { provider: 'Hargreaves Lansdown', type: 'ISA', value: fmt(invM * 0.58), meta: '2024/25 allowance used', details: [] },
-          ]},
-          { label: 'Savings & Cash', color: '#16a34a', holdings: [
-            { provider: 'Nationwide', type: 'Current & Savings', value: fmt(savM * 0.6), meta: null, details: [] },
-          ]},
-        ]
-
-        const sarahCats: Category[] = [
-          { label: 'Pensions', color: '#7c3aed', holdings: [
-            { provider: 'Aviva', type: 'SIPP', value: fmt(pensM * 0.23), meta: 'Uncrystallised', details: [{ l: 'Tax-Free Cash', v: fmt(pensM * 0.23 * 0.25) }, { l: 'MPAA Status', v: 'Not Triggered' }] },
-          ]},
-          { label: 'Investments', color: '#3b82f6', holdings: [
-            { provider: 'Hargreaves Lansdown', type: 'ISA', value: fmt(invM * 0.42), meta: '2024/25 allowance used', details: [] },
-          ]},
-          { label: 'Savings & Cash', color: '#16a34a', holdings: [
-            { provider: 'Barclays', type: 'Savings', value: fmt(savM * 0.4), meta: null, details: [] },
-          ]},
-        ]
-
-        const jointItems: Holding[] = [
-          { provider: 'Primary Residence', type: 'Property — joint ownership', value: fmt(propM), meta: client.address, details: [] },
-        ]
-
-        // TODO: liability attribution (Jimmy / Sarah / Joint) not in data model — hardcoded for demo
-        const liabilityItems: LiabilityHolding[] = [
-          { provider: 'Nationwide', type: 'Mortgage', value: fmt(mortM), meta: client.address, details: [{ l: 'Monthly payment', v: '£1,240' }, { l: 'Rate', v: '4.2% fixed — ends Mar 2027' }], attribution: 'Joint' },
-          { provider: 'HSBC', type: 'Credit Card', value: fmt(jimmyCrM), meta: null, details: [], attribution: 'Jimmy' },
-          { provider: 'Barclays', type: 'Credit Card', value: fmt(sarahCrM), meta: null, details: [], attribution: 'Sarah' },
-        ]
 
         return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* ── Section 1: Headline figures ── */}
+          {/* Headline figures */}
           <div className="r-grid-three-col">
-            {([
-              { label: 'Total assets', value: fmt(aM) },
-              { label: 'Total liabilities', value: `−${fmt(lM)}` },
-              { label: 'Net worth', value: fmt(nwM) },
-            ] as const).map(s => (
-              <div key={s.label} className="ds-card" style={{ padding: '16px 18px' }}>
-                <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginBottom: 6 }}>{s.label}</div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{s.value}</div>
+            <div className="stat-card" style={{ padding: '16px 18px' }}>
+              <div>
+                <div className="stat-label" style={{ color: 'var(--text-2)' }}>Total assets</div>
+                <div className="stat-num" style={{ fontSize: 24 }}>{fmt(aM)}</div>
               </div>
-            ))}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="stat-icon" style={{ alignSelf: 'flex-start', flexShrink: 0 }}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div className="stat-card" style={{ padding: '16px 18px' }}>
+              <div>
+                <div className="stat-label" style={{ color: 'var(--text-2)' }}>Total liabilities</div>
+                <div className="stat-num" style={{ fontSize: 24 }}>−{fmt(lM)}</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="stat-icon" style={{ alignSelf: 'flex-start', flexShrink: 0 }}><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+            </div>
+            <div className="stat-card" style={{ padding: '16px 18px' }}>
+              <div>
+                <div className="stat-label" style={{ color: 'var(--text-2)' }}>Net worth</div>
+                <div className="stat-num" style={{ fontSize: 24 }}>{fmt(nwM)}</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="stat-icon" style={{ alignSelf: 'flex-start', flexShrink: 0 }}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
           </div>
 
-          {/* ── Section 2: Individual holdings ── */}
-          {isJoint && (() => {
-            const catTotal = (holdings: typeof jimmyCats[number]['holdings']) =>
-              fmt(holdings.reduce((s, h) => {
-                const raw = h.value.startsWith('£') ? parseFloat(h.value.replace(/[£MkK,]/g, '')) * (h.value.includes('M') ? 1 : 0.001) : 0
-                return s + raw
-              }, 0))
+          {/* Pie chart + holdings table — combined card */}
+          <div className="ds-card" style={{ overflow: 'hidden' }}>
 
-            const personSection = (
-              name: string,
-              initials: string,
-              total: string,
-              cats: typeof jimmyCats,
-              keyPrefix: string
-            ) => (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {/* Person header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="ds-avatar">{initials}</div>
-                    <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-1)' }}>{name}</span>
-                  </div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{total}</div>
-                </div>
-                {/* Categories grouped under this person */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  {cats.map((cat, ci) => (
-                    <div key={`${keyPrefix}-${cat.label}-${ci}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                      {renderCatHeader(cat.label, catTotal(cat.holdings))}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {cat.holdings.map((h, hi) => renderCard(h, `${keyPrefix}-${cat.label}-${hi}`))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-
-            if (isNarrow) {
-              // Tablet: show each person's holdings as a complete grouped section
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                  <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 32 }}>
-                    {personSection(client.name, client.initials, fmt(jimmyTotalM), jimmyCats, 'jimmy')}
-                  </div>
-                  {personSection(client.spouseName ?? '', client.spouseInitials ?? '', fmt(sarahTotalM), sarahCats, 'sarah')}
-                </div>
-              )
-            }
-
-            // Desktop: side-by-side columns with row-aligned categories
-            return (
-              <div className="r-grid-two-col">
-                {/* Person header row */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="ds-avatar">{client.initials}</div>
-                    <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-1)' }}>{client.name}</span>
-                  </div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(jimmyTotalM)}</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="ds-avatar">{client.spouseInitials}</div>
-                    <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-1)' }}>{client.spouseName}</span>
-                  </div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(sarahTotalM)}</div>
-                </div>
-                {/* Category rows — paired so each row shares height across both columns */}
-                {jimmyCats.flatMap((jimmyCat, ci) => {
-                  const sarahCat = sarahCats[ci]
-                  return [
-                    <div key={`jimmy-${jimmyCat.label}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                      {renderCatHeader(jimmyCat.label, catTotal(jimmyCat.holdings))}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {jimmyCat.holdings.map((h, hi) => renderCard(h, `jimmy-${jimmyCat.label}-${hi}`))}
-                      </div>
-                    </div>,
-                    <div key={`sarah-${jimmyCat.label}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                      {renderCatHeader(sarahCat.label, catTotal(sarahCat.holdings))}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {sarahCat.holdings.map((h, hi) => renderCard(h, `sarah-${sarahCat.label}-${hi}`))}
-                      </div>
-                    </div>,
-                  ]
-                })}
-              </div>
-            )
-          })()}
-
-          {/* Non-joint: single column individual holdings */}
-          {!isJoint && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {jimmyCats.map(cat => (
-                <div key={cat.label}>
-                  {renderCatHeader(cat.label, fmt(cat.holdings.reduce((s, h) => {
-                    const raw = h.value.startsWith('£') ? parseFloat(h.value.replace(/[£MkK,]/g, '')) * (h.value.includes('M') ? 1 : 0.001) : 0
-                    return s + raw
-                  }, 0)))}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {cat.holdings.map((h, hi) => renderCard(h, `solo-${cat.label}-${hi}`))}
-                  </div>
-                </div>
+            {/* Assets / Liabilities toggle */}
+            <div style={{ padding: '24px 28px 0', display: 'flex', gap: 20 }}>
+              {(['assets', 'liabilities'] as const).map(f => (
+                <button key={f} onClick={() => setHoldingsFilter(f)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 15, fontWeight: holdingsFilter === f ? 700 : 400, color: holdingsFilter === f ? 'var(--text-1)' : 'var(--text-3)', padding: 0, textTransform: 'capitalize' }}>
+                  {f === 'assets' ? 'Assets' : 'Liabilities'}
+                </button>
               ))}
             </div>
-          )}
 
-          {/* ── Section 3: Joint holdings ── */}
-          {isJoint && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-2)' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  <span style={{ fontSize: 15, fontWeight: 500 }}>Joint holdings</span>
-                </div>
-                <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>{fmt(propM)}</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {jointItems.map((h, hi) => renderCard(h, `joint-${hi}`))}
-              </div>
-            </div>
-          )}
+            {/* Donut chart */}
+            <div style={{ padding: '20px 28px 26px' }}>
+              {(() => {
+                const cx = 100, cy = 100, outerR = 88, innerR = 56
+                const segments = activeCats.map(cat => ({
+                  label: cat.label,
+                  color: cat.color,
+                  value: cat.holdings.reduce((s, h) => s + h.value, 0),
+                }))
+                const total = segments.reduce((s, seg) => s + seg.value, 0)
 
-          {/* ── Section 4: Liabilities ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-2)' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                <span style={{ fontSize: 15, fontWeight: 500 }}>Liabilities</span>
-              </div>
-              <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>−{fmt(lM)}</span>
+                const polar = (angleDeg: number, r: number) => {
+                  const rad = (angleDeg - 90) * Math.PI / 180
+                  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
+                }
+
+                const arc = (startDeg: number, endDeg: number) => {
+                  const o1 = polar(startDeg, outerR), o2 = polar(endDeg, outerR)
+                  const i1 = polar(endDeg, innerR), i2 = polar(startDeg, innerR)
+                  const lg = endDeg - startDeg > 180 ? 1 : 0
+                  return `M ${o1.x} ${o1.y} A ${outerR} ${outerR} 0 ${lg} 1 ${o2.x} ${o2.y} L ${i1.x} ${i1.y} A ${innerR} ${innerR} 0 ${lg} 0 ${i2.x} ${i2.y} Z`
+                }
+
+                let angle = 0
+                const gap = 1.5
+                const paths = segments.map(seg => {
+                  const sweep = (seg.value / total) * 360
+                  const start = angle + gap / 2
+                  const end = angle + sweep - gap / 2
+                  angle += sweep
+                  return { ...seg, start, end, pct: seg.value / total }
+                })
+
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
+                    <svg width="200" height="200" viewBox="0 0 200 200" style={{ flexShrink: 0 }}>
+                      {paths.map((seg, i) => (
+                        <path key={i} d={arc(seg.start, seg.end)} fill={seg.color} opacity={0.82} />
+                      ))}
+                      <text x="100" y="93" textAnchor="middle" fontSize="10.5" fill="#a3a3a3" fontFamily="Inter, sans-serif" fontWeight="500">
+                        {holdingsFilter === 'assets' ? 'Total assets' : 'Total liabilities'}
+                      </text>
+                      <text x="100" y="113" textAnchor="middle" fontSize="18" fill="#111111" fontFamily="Inter, sans-serif" fontWeight="700">
+                        {fmt(total)}
+                      </text>
+                    </svg>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+                      {paths.map((seg, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: 2, background: seg.color, flexShrink: 0, opacity: 0.82 }} />
+                          <span style={{ fontSize: 13.5, color: 'var(--text-2)', flex: 1 }}>{seg.label}</span>
+                          <span style={{ fontSize: 13.5, color: 'var(--text-3)', minWidth: 36, textAlign: 'right' }}>{Math.round(seg.pct * 100)}%</span>
+                          <span style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 600, minWidth: 60, textAlign: 'right' }}>{fmt(seg.value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {liabilityItems.map((h, hi) => renderCard(h, `liab-${hi}`, h.attribution))}
-            </div>
+
+            {/* Table — no borders, spacious */}
+            {(() => {
+              const cols = 'minmax(0,1.2fr) minmax(0,1.4fr) 90px 120px 90px'
+              const gridBase: React.CSSProperties = { display: 'grid', gridTemplateColumns: cols, alignItems: 'center', columnGap: 24 }
+              return (
+                <>
+                  {/* Column headers */}
+                  <div style={{ ...gridBase, padding: '10px 28px', borderTop: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)' }}>Type</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)' }}>Provider</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)' }}>Owner</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)', textAlign: 'right' }}>% of portfolio</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-3)', textAlign: 'right' }}>Value</div>
+                  </div>
+
+                  {/* Body rows — inset rounded highlight */}
+                  <div style={{ padding: '4px 16px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {activeCats.map((cat, ci) => {
+                      const catTotal = cat.holdings.reduce((s, h) => s + h.value, 0)
+                      const isExpanded = expandedCats.has(cat.label)
+                      return isExpanded ? (
+                        /* Expanded: full rounded block with bg */
+                        <div key={cat.label} style={{ background: '#f5f6f8', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: ci === 0 ? 0 : 10 }}>
+                          <div onClick={() => toggleCat(cat.label)} style={{ cursor: 'pointer' }}>
+                            <div style={{ ...gridBase, padding: '14px 12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0, transform: 'rotate(90deg)', transition: 'transform 0.15s' }}>
+                                  <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
+                                <span style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--text-1)' }}>{cat.label}</span>
+                                <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>· {cat.holdings.length}</span>
+                              </div>
+                              <div />
+                              <div />
+                              <div style={{ fontSize: 13.5, color: 'var(--text-2)', textAlign: 'right' }}>{fmtPct(totalBase > 0 ? catTotal / totalBase : 0)}</div>
+                              <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', textAlign: 'right' }}>{fmt(catTotal)}</div>
+                            </div>
+                          </div>
+                          <div style={{ borderTop: '1px solid var(--border)' }} />
+                          {cat.holdings.map((h, hi) => (
+                            <div key={`${cat.label}-${hi}`} style={{ ...gridBase, padding: '10px 12px 10px 38px' }}>
+                              <div style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500 }}>{h.provider}</div>
+                              <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{h.name}</div>
+                              <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{h.owner}</div>
+                              <div style={{ fontSize: 13, color: 'var(--text-2)', textAlign: 'right' }}>{fmtPct(totalBase > 0 ? h.value / totalBase : 0)}</div>
+                              <div style={{ fontSize: 13.5, color: 'var(--text-1)', textAlign: 'right' }}>{fmt(h.value)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        /* Collapsed: hover also inset + rounded */
+                        <div
+                          key={cat.label}
+                          onClick={() => toggleCat(cat.label)}
+                          style={{ cursor: 'pointer', borderRadius: 'var(--radius-md)', marginTop: ci === 0 ? 0 : 10 }}
+                          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = '#f5f6f8'}
+                          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = ''}
+                        >
+                          <div style={{ ...gridBase, padding: '14px 12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0, transform: 'none', transition: 'transform 0.15s' }}>
+                                <polyline points="9 18 15 12 9 6"/>
+                              </svg>
+                              <span style={{ width: 8, height: 8, borderRadius: '50%', background: cat.color, display: 'inline-block', flexShrink: 0 }} />
+                              <span style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--text-1)' }}>{cat.label}</span>
+                              <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>· {cat.holdings.length}</span>
+                            </div>
+                            <div />
+                            <div />
+                            <div style={{ fontSize: 13.5, color: 'var(--text-2)', textAlign: 'right' }}>{fmtPct(totalBase > 0 ? catTotal / totalBase : 0)}</div>
+                            <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)', textAlign: 'right' }}>{fmt(catTotal)}</div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )
+            })()}
+
           </div>
 
         </div>
@@ -699,10 +710,10 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           },
         ]
         return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
           {/* Household summary — prominent card */}
-          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-lg)', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 24 }}>
             {/* Risk band */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
               <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Household risk profile</span>
@@ -736,7 +747,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
           {/* Per-person cards */}
           {people.map(person => (
-            <div key={person.name} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+            <div key={person.name} style={{ background: 'var(--bg)', borderRadius: 'var(--radius-lg)', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
 
               {/* Card header */}
               <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -806,7 +817,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
       })()}
       {/* ── Meetings ── */}
       {activeTab === 'Meetings' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <h2 style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Upcoming meetings
@@ -871,7 +882,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── Activity ── */}
       {activeTab === 'Activity' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
           {/* Workflow banner */}
           <div style={{ background: 'var(--accent-bg)', border: '1px solid rgba(79,110,247,0.18)', borderRadius: 'var(--radius-xl)', padding: '16px 18px', display: 'flex', gap: 14 }}>
@@ -922,7 +933,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── Forms ── */}
       {activeTab === 'Forms' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[
             {
               initials: 'JJ', name: 'Jimmy Johnson',

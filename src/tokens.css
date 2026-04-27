@@ -8,8 +8,8 @@
 :root {
 
   /* Surface */
-  --bg:              #ffffff;
-  --bg-2:            #fcfcfd;
+  --bg:              #FEFFFF;
+  --bg-2:            #F3F5F6;
   --bg-3:            #ebebec;
   --bg-hover:        #e2e2e3;
 
@@ -53,7 +53,7 @@
   --radius-xl:       12px;
 
   /* Shadow */
-  --shadow-sm:       0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-sm:       0 1px 3px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.03);
 
   /* Typography */
   --font:            'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

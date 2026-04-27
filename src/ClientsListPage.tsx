@@ -45,11 +45,6 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
   return (
     <div className="r-page-pad" style={{ display: 'flex', flexDirection: 'column', gap: 24, minHeight: '100%', maxWidth: 1750, margin: '0 auto' }}>
 
-      {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-3)' }}>
-        <span style={{ color: 'var(--text-2)' }}>Clients</span>
-      </div>
-
       {/* Title */}
       <div>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.025em', margin: 0 }}>
@@ -60,13 +55,13 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
 
       {/* Stat cards */}
       <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-        <div className="stat-card">
+        <div className="stat-card" style={{ border: '1px solid var(--border)' }}>
           <div>
             <div className="stat-label" style={{ color: 'var(--text-2)' }}>Live clients</div>
             <div className="stat-num">10</div>
           </div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card" style={{ border: '1px solid var(--border)' }}>
           <div>
             <div className="stat-label" style={{ color: 'var(--text-2)' }}>Onboarding</div>
             <div className="stat-num">4</div>
@@ -90,26 +85,43 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
 
       {/* Tabs + Table */}
       <div>
-        <div className="ds-tabs">
+        <div style={{ display: 'inline-flex', gap: 2 }}>
           {tabs.map(tab => (
-            <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                background: activeTab === tab ? '#f0f0f0' : 'transparent',
+                border: 'none',
+                borderRadius: 6,
+                padding: '5px 12px',
+                fontSize: 13.5,
+                fontWeight: activeTab === tab ? 500 : 400,
+                color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)',
+                cursor: 'pointer',
+                fontFamily: 'var(--font)',
+                transition: 'all 0.15s',
+              }}
+            >{tab}</button>
           ))}
         </div>
 
-        <div className="ds-table-wrap" style={{ marginTop: 24 }}>
-          <table className="ds-table">
-            <thead>
-              <tr>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Client</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Account</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Form status</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500 }}>Last updated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => (
-                <tr key={c.name} onClick={() => onSelect(c)} style={{ cursor: 'pointer' }}>
-                  <td style={{ padding: '16px 16px' }}>
+        <table className="ds-table" style={{ marginTop: 8 }}>
+          <thead>
+            <tr>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Client</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Account</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Form status</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Last updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((c, i) => {
+              const isLast = i === filtered.length - 1
+              const tdStyle: React.CSSProperties = { padding: '17px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)' }
+              return (
+                <tr key={c.name} onClick={() => onSelect(c)} style={{ cursor: 'pointer', borderBottom: 'none' }}>
+                  <td style={tdStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontWeight: 500 }}>
                         {c.name}
@@ -119,14 +131,14 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
                       </span>
                     </div>
                   </td>
-                  <td style={{ padding: '16px 16px' }}><AccountBadges type={c.account} /></td>
-                  <td style={{ padding: '16px 16px' }}><FormStatusCell status={c.formStatus} /></td>
-                  <td style={{ padding: '16px 16px' }}>{c.lastUpdated}</td>
+                  <td style={tdStyle}><AccountBadges type={c.account} /></td>
+                  <td style={tdStyle}><FormStatusCell status={c.formStatus} /></td>
+                  <td style={tdStyle}>{c.lastUpdated}</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
