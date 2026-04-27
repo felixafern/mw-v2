@@ -1,15 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import type { Client } from './data'
 
-function PersonalRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0' }}>
-      <span style={{ color: 'var(--text-2)', display: 'flex', alignItems: 'center', flexShrink: 0, width: 16 }}>{icon}</span>
-      <span style={{ fontSize: 13, color: 'var(--text-2)', flex: '0 0 120px' }}>{label}</span>
-      <span style={{ fontSize: 13.5, color: 'var(--text-1)' }}>{children}</span>
-    </div>
-  )
-}
 
 export default function ClientProfilePage({ client, onBack }: { client: Client; onBack: () => void }) {
   const profileTabs = ['Overview', 'Holdings', 'Risk', 'Meetings', 'Activity', 'Forms'] as const
@@ -24,13 +15,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   const [hoveredSeg, setHoveredSeg] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set())
-  const [isNarrow, setIsNarrow] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900)
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 900px)')
-    const handler = (e: MediaQueryListEvent) => setIsNarrow(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
   const isJoint = !!client.spouseInitials
   const [activeMember, setActiveMember] = useState<'primary' | 'spouse' | 'household'>(isJoint ? 'household' : 'primary')
   const lastName = client.name.split(' ').pop()
@@ -891,7 +875,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               {[
                 { date: '15 Jan 2026', time: '10:00 – 11:00 AM', title: 'Q4 Performance Review', format: 'In person', attendees: 'Catherine Fuller, Jimmy Johnson' },
                 { date: '12 Aug 2025', time: '11:30 AM – 12:30 PM', title: 'Mid-Year Check-In', format: 'Video call', attendees: 'Catherine Fuller, Jimmy & Sarah Johnson' },
-              ].map((m, i, arr) => (
+              ].map((m, i) => (
                 <div key={i}>
                 {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
                 <div className="meeting-row" style={{ padding: '22px 22px', display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -991,7 +975,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                   parties: ['Sarah Johnson (Client)'],
                   actions: ['Session started', '2FA verified', 'Last login timestamp updated'],
                 },
-              ] as const).map((e, i, arr) => {
+              ] as const).map((e, i) => {
                 const isExpanded = expandedActivity === i
                 return (
                   <div key={i}>
