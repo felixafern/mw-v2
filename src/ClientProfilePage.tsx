@@ -1056,16 +1056,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           return <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 12, fontWeight: 500, color: 'var(--text-3)', background: 'var(--bg-2)', borderRadius: 99, padding: '3px 9px' }}>Not started</span>
         }
 
-        const householdBadge = (ft: FormType) => {
-          const latestStatuses = ft.people.map(p => p.entries[0]?.status ?? 'Not started')
-          const allComplete = latestStatuses.every(s => s === 'Complete')
-          const anyInProgress = latestStatuses.some(s => s === 'In progress')
-          const anyNotStarted = latestStatuses.some(s => s === 'Not started')
-          if (allComplete) return { label: 'All complete', color: 'var(--success-text)' }
-          if (anyInProgress) return { label: 'In progress', color: 'var(--warn-text)' }
-          if (anyNotStarted) return { label: 'Action needed', color: 'var(--warn-text)' }
-          return { label: 'Action needed', color: 'var(--warn-text)' }
-        }
 
         // Derive unique people and their per-person form status
         const peopleMap = new Map<string, { initials: string; name: string }>()
