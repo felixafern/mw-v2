@@ -144,7 +144,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           const meetingsScheduled = 1 // upcoming meetings count
           const badgeStyle = { fontSize: 11, fontWeight: 600, color: 'var(--text-3)', borderRadius: 4, padding: '1px 5px', lineHeight: '16px' } as const
           return (
-        <div className="r-tabs-pad" style={{ paddingBottom: 16, display: 'flex', gap: 2 }}>
+        <div className="r-tabs-pad" style={{ paddingBottom: 16, display: 'flex', gap: 2, maxWidth: 1750, margin: '0 auto', marginTop: 36 }}>
           {profileTabs.map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? '#f0f0f0' : 'transparent', border: 'none', borderRadius: 6, padding: '8px 14px', fontSize: 13.5, fontWeight: 500, color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               {tab}
@@ -242,7 +242,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 : <>—</>
 
               const Row = ({ label, children }: { label: string; children: ReactNode }) => (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, padding: '14px 20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, padding: '15px 24px' }}>
                   <span style={{ fontSize: 13, color: 'var(--text-2)', flexShrink: 0 }}>{label}</span>
                   <span style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500, textAlign: 'right' }}>{children}</span>
                 </div>
@@ -262,14 +262,14 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 ]
                 return (
                   <div className="ds-card" style={{ overflow: 'hidden' }}>
-                    <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ padding: '20px 24px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div className="ds-avatar" style={{ width: 30, height: 30, fontSize: 11, flexShrink: 0 }}>{initials}</div>
                       <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{name}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       {rows.map((r, i) => (
                         <div key={i}>
-                          {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
+                          {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 24px' }} />}
                           <Row label={r.label}>{r.value as ReactNode}</Row>
                         </div>
                       ))}
@@ -300,7 +300,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
             {/* Next meeting */}
             <div className="ds-card">
               {/* Top: date + title + time */}
-              <div style={{ padding: '18px 20px', display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+              <div style={{ padding: '22px 24px', display: 'flex', gap: 18, alignItems: 'flex-start' }}>
                 {/* Date block */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg-2)', borderRadius: 'var(--radius-md)', padding: '8px 14px', flexShrink: 0, minWidth: 56 }}>
                   <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>Feb</span>
@@ -321,10 +321,10 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               </div>
 
               {/* Divider */}
-              <div style={{ borderTop: '1px solid var(--border)', margin: '0 20px' }} />
+              <div style={{ borderTop: '1px solid var(--border)', margin: '0 24px' }} />
 
               {/* Bottom: meta rows + actions */}
-              <div style={{ padding: '14px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {/* Client / type row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -356,17 +356,17 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
             {/* Last advice letter — inline preview */}
             <div className="ds-card" style={{ overflow: 'hidden' }}>
-              <div style={{ padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: '18px 24px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-2)' }}>
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
                 <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>Last advice letter</span>
                 <span style={{ fontSize: 12, color: 'var(--text-3)' }}>14 Mar 2025</span>
               </div>
-              <div style={{ padding: '0 18px 4px', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.65 }}>
+              <div style={{ padding: '0 24px 8px', fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.65 }}>
                 Reviewed pension consolidation for Jimmy and ISA strategy for Sarah. Recommended increasing Jimmy's SIPP contributions to maximise annual allowance.
               </div>
-              <div style={{ padding: '10px 18px 14px', display: 'flex', gap: 8 }}>
+              <div style={{ padding: '10px 24px 20px', display: 'flex', gap: 8 }}>
                 <button onClick={() => setLetterExpanded(e => !e)} className="ds-btn ds-btn-secondary" style={{ fontSize: 13 }}>
                   {letterExpanded ? 'Collapse' : 'Preview'}
                 </button>
@@ -394,7 +394,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 <div className="ds-card-title">Portfolio</div>
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 400 }}>Last reviewed 10 months ago</span>
               </div>
-              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ padding: '16px 24px 22px', display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {[
                   { label: 'Pensions',        pct: 45, value: '£1.4m',  color: '#7c3aed' },
                   { label: 'Property',        pct: 26, value: '£810k',  color: '#4f6ef7' },
@@ -426,53 +426,29 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 <div className="ds-card-title">Risk profile</div>
               </div>
               {(() => {
-                const ScoreBars = ({ clientScore, pjmScore }: { clientScore: number; pjmScore: number }) => (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {[{ label: 'Client score', score: clientScore }, { label: 'Adjusted (PJM)', score: pjmScore }].map(({ label, score }) => (
-                      <div key={label}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
-                          <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{label}</span>
-                          <span style={{ fontSize: 13.5, color: 'var(--text-2)' }}>{score}<span style={{ color: 'var(--text-3)' }}>/100</span></span>
-                        </div>
-                        <div style={{ height: 6, borderRadius: 3, background: 'var(--bg-3)', overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${score}%`, borderRadius: 3, background: 'var(--warn)' }} />
+                const members = activeMember === 'household' && isJoint ? [
+                  { initials: client.initials, name: client.name.split(' ')[0], label: 'Balanced', score: memberData.primary.clientScore },
+                  { initials: client.spouseInitials ?? '', name: (client.spouseName ?? '').split(' ')[0], label: 'Balanced', score: memberData.spouse.clientScore },
+                ] : [
+                  { initials: activeMember === 'spouse' ? (client.spouseInitials ?? '') : client.initials,
+                    name: activeMember === 'spouse' ? ((client.spouseName ?? '').split(' ')[0]) : client.name.split(' ')[0],
+                    label: 'Balanced', score: (activeMember === 'spouse' ? memberData.spouse : memberData.primary).clientScore },
+                ]
+                return (
+                  <div>
+                    {members.map((m, i) => (
+                      <div key={m.initials}>
+                        {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 24px' }} />}
+                        <div style={{ padding: '15px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div className="ds-avatar" style={{ width: 24, height: 24, fontSize: 9, flexShrink: 0 }}>{m.initials}</div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{m.name}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{m.label}</span>
+                          </div>
+                          <span style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text-1)' }}>{m.score}<span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-3)' }}>/100</span></span>
                         </div>
                       </div>
                     ))}
-                  </div>
-                )
-
-                if (activeMember === 'household' && isJoint) {
-                  return (
-                    <div>
-                      <div style={{ padding: '14px 18px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                          <div className="ds-avatar" style={{ width: 24, height: 24, fontSize: 9, flexShrink: 0 }}>{client.initials}</div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{client.name.split(' ')[0]}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 2 }}>Balanced</span>
-                        </div>
-                        <ScoreBars clientScore={memberData.primary.clientScore} pjmScore={memberData.primary.pjmScore} />
-                      </div>
-                      <div style={{ height: 1, background: 'var(--border)', margin: '0 18px' }} />
-                      <div style={{ padding: '14px 18px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                          <div className="ds-avatar" style={{ width: 24, height: 24, fontSize: 9, flexShrink: 0 }}>{client.spouseInitials}</div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{(client.spouseName ?? '').split(' ')[0]}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 2 }}>Balanced</span>
-                        </div>
-                        <ScoreBars clientScore={memberData.spouse.clientScore} pjmScore={memberData.spouse.pjmScore} />
-                      </div>
-                    </div>
-                  )
-                }
-
-                return (
-                  <div style={{ padding: '14px 18px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--warn)', display: 'inline-block' }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>Balanced</span>
-                    </div>
-                    <ScoreBars clientScore={md.clientScore} pjmScore={md.pjmScore} />
                   </div>
                 )
               })()}
