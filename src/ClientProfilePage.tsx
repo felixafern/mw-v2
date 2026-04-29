@@ -227,6 +227,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                               <Field label="Age & DOB">54 · {client.dob}</Field>
                               <Field label="Occupation">{memberData.primary.occupation}</Field>
                               <Field label="Income">{memberData.primary.income}</Field>
+                              <Field label="Email">{memberData.primary.email}</Field>
                               <Field label="ID Expiry"><IdExpiry expiry={client.idExpiry} warn /></Field>
                             </div>
                           </div>
@@ -237,6 +238,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                               <Field label="Age & DOB">52 · {client.spouseDob}</Field>
                               <Field label="Occupation">{client.spouseOccupation}</Field>
                               <Field label="Income">{client.spouseIncome}</Field>
+                              <Field label="Email">{memberData.spouse.email}</Field>
                               <Field label="ID Expiry"><IdExpiry expiry={client.spouseIdExpiry} /></Field>
                             </div>
                           </div>
@@ -260,6 +262,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                         <Field label="Age & DOB">{pmd.age} · {pmd.dob}</Field>
                         <Field label="Occupation">{pmd.occupation}</Field>
                         <Field label="Income">{pmd.income}</Field>
+                        <Field label="Email">{pmd.email}</Field>
                         <Field label="ID Expiry"><IdExpiry expiry={pmd.idExpiry} warn={activeMember === 'primary' && pmd.idExpiry === 'Jan 2026'} /></Field>
                         <Field label="Marital Status">{pmd.maritalStatus}</Field>
                         {pmd.children && <Field label="Children">{pmd.children}</Field>}
@@ -530,7 +533,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
             {/* Donut chart */}
             <div style={{ padding: '20px 28px 26px' }}>
               {(() => {
-                const cx = 100, cy = 100, outerR = 88, innerR = 56
+                const cx = 120, cy = 120, outerR = 108, innerR = 68
                 const segments = activeCats.map(cat => ({
                   label: cat.label,
                   color: cat.color,
@@ -562,14 +565,14 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
                 return (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-                    <svg width="200" height="200" viewBox="0 0 200 200" style={{ flexShrink: 0 }}>
+                    <svg width="240" height="240" viewBox="0 0 240 240" style={{ flexShrink: 0 }}>
                       {paths.map((seg, i) => (
                         <path key={i} d={arc(seg.start, seg.end)} fill={seg.color} opacity={hoveredSeg && hoveredSeg !== seg.label ? 0.15 : 0.82} style={{ transition: 'opacity 0.15s' }} />
                       ))}
-                      <text x="100" y="93" textAnchor="middle" fontSize="10.5" fill="#a3a3a3" fontFamily="Inter, sans-serif" fontWeight="500">
+                      <text x="120" y="113" textAnchor="middle" fontSize="10.5" fill="#a3a3a3" fontFamily="Inter, sans-serif" fontWeight="500">
                         {holdingsFilter === 'assets' ? 'Total assets' : 'Total liabilities'}
                       </text>
-                      <text x="100" y="113" textAnchor="middle" fontSize="18" fill="#111111" fontFamily="Inter, sans-serif" fontWeight="700">
+                      <text x="120" y="133" textAnchor="middle" fontSize="18" fill="#111111" fontFamily="Inter, sans-serif" fontWeight="700">
                         {fmt(total)}
                       </text>
                     </svg>
@@ -648,15 +651,17 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                             </div>
                           </div>
                           <div style={{ height: 1, background: 'var(--border)', margin: '0 12px' }} />
+                          <div style={{ padding: '14px 0 14px' }}>
                           {cat.holdings.map((h, hi) => (
-                            <div key={`${cat.label}-${hi}`} style={{ ...gridBase, padding: '10px 12px 10px 38px' }}>
-                              <div style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500 }}>{h.provider}</div>
+                            <div key={`${cat.label}-${hi}`} style={{ ...gridBase, padding: '13px 12px', margin: '0 8px', borderRadius: 6, transition: 'background 0.1s' }} onMouseEnter={e => { setHoveredSeg(cat.label); (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,0,0,0.04)' }} onMouseLeave={e => { setHoveredSeg(null); (e.currentTarget as HTMLDivElement).style.background = '' }}>
+                              <div style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500, paddingLeft: 26 }}>{h.provider}</div>
                               <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{h.name}</div>
                               <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{h.owner}</div>
                               <div style={{ fontSize: 13, color: 'var(--text-2)', textAlign: 'right' }}>{fmtPct(totalBase > 0 ? h.value / totalBase : 0)}</div>
                               <div style={{ fontSize: 13.5, color: 'var(--text-1)', textAlign: 'right' }}>{fmt(h.value)}</div>
                             </div>
                           ))}
+                          </div>
                         </div>
                       ) : (
                         /* Collapsed: hover also inset + rounded */
