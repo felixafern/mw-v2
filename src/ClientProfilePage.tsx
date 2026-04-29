@@ -1067,11 +1067,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           return { label: 'Action needed', color: 'var(--warn-text)' }
         }
 
-        const attentionCount = formTypes.filter(ft => {
-          const b = householdBadge(ft)
-          return b.label !== 'All complete'
-        }).length
-
         // Derive unique people and their per-person form status
         const peopleMap = new Map<string, { initials: string; name: string }>()
         formTypes.forEach(ft => ft.people.forEach(p => { if (!peopleMap.has(p.initials)) peopleMap.set(p.initials, { initials: p.initials, name: p.name }) }))
