@@ -53,7 +53,7 @@ function App() {
         )}
       </aside>
       <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, overflowY: 'auto', background: selectedClient ? 'var(--bg-2)' : 'var(--bg)' }}>
+        <div style={{ flex: 1, overflowY: 'auto', background: 'var(--bg)' }}>
           {selectedClient
             ? <ClientProfilePage client={selectedClient} onBack={() => setSelectedClient(null)} />
             : <ClientsListPage onSelect={setSelectedClient} />

@@ -106,7 +106,7 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
           ))}
         </div>
 
-        <table className="ds-table" style={{ marginTop: 24, border: '1px solid var(--border)', borderRadius: 8, borderCollapse: 'separate', borderSpacing: 0, overflow: 'hidden' }}>
+        <table className="ds-table profile-card" style={{ marginTop: 24, border: '1px solid var(--border)', borderRadius: 8, borderCollapse: 'separate', borderSpacing: 0, overflow: 'hidden' }}>
           <thead>
             <tr>
               <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Client</th>

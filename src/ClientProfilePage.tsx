@@ -7,6 +7,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   type ProfileTab = typeof profileTabs[number]
   const [activeTab, setActiveTab] = useState<ProfileTab>('Overview')
   const [formsOpen, setFormsOpen] = useState<Record<string, boolean>>({})
+  const [historyOpen, setHistoryOpen] = useState<Record<string, boolean>>({})
   const [noteTaker, setNoteTaker] = useState(false)
   const [softFactsExpanded, setSoftFactsExpanded] = useState(false)
   const [letterExpanded, setLetterExpanded] = useState(false)
@@ -15,7 +16,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   const [hoveredSeg, setHoveredSeg] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set())
-  const [theme, setTheme] = useState<'default' | 'white'>('default')
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editFields, setEditFields] = useState({
     name: client.name,
@@ -85,7 +85,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
 
   return (
-    <div className={theme === 'white' ? 'theme-white' : ''} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+    <div className="theme-white" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
 
       {/* ── White header zone: breadcrumb + name + tabs ── */}
       <div style={{ background: 'var(--bg)' }}>
@@ -124,34 +124,37 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.025em', margin: 0 }}>{displayName}</h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {/* Theme switcher */}
-              <div style={{ display: 'inline-flex', gap: 2, background: 'var(--bg-2)', borderRadius: 8, padding: 3 }}>
-                {(['default', 'white'] as const).map(t => (
-                  <button key={t} onClick={() => setTheme(t)} style={{ background: theme === t ? '#fff' : 'transparent', border: 'none', borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: theme === t ? 500 : 400, color: theme === t ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', boxShadow: theme === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s', textTransform: 'capitalize' }}>
-                    {t}
-                  </button>
-                ))}
-              </div>
               <button className="ds-btn ds-btn-secondary" onClick={() => setEditModalOpen(true)}>Edit</button>
             </div>
           </div>
 
         </div>
 
-        {/* Tabs — outside the maxWidth container so border-bottom spans full width */}
-        {theme === 'white' ? (
-          <div className="r-tabs-pad" style={{ paddingBottom: 16, display: 'flex', gap: 2 }}>
-            {profileTabs.map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? '#f0f0f0' : 'transparent', border: 'none', borderRadius: 6, padding: '8px 14px', fontSize: 13.5, fontWeight: 500, color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s' }}>{tab}</button>
-            ))}
-          </div>
-        ) : (
-          <div className="ds-tabs r-tabs-pad">
-            {profileTabs.map(tab => (
-              <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-            ))}
-          </div>
-        )}
+        {/* Tabs */}
+        {(() => {
+          const allowedForTabs = new Set(
+            activeMember === 'household' ? [client.initials, client.spouseInitials].filter(Boolean) :
+            activeMember === 'spouse'    ? [client.spouseInitials] : [client.initials]
+          )
+          const formsPending = [
+            { initials: 'JJ', statuses: ['Complete', 'Complete'] },
+            { initials: 'SJ', statuses: ['Complete', 'In progress'] },
+          ].filter(p => allowedForTabs.has(p.initials))
+            .reduce((n, p) => n + p.statuses.filter(s => s !== 'Complete').length, 0)
+          const meetingsScheduled = 1 // upcoming meetings count
+          const badgeStyle = { fontSize: 11, fontWeight: 600, color: 'var(--text-3)', borderRadius: 4, padding: '1px 5px', lineHeight: '16px' } as const
+          return (
+        <div className="r-tabs-pad" style={{ paddingBottom: 16, display: 'flex', gap: 2 }}>
+          {profileTabs.map(tab => (
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? '#f0f0f0' : 'transparent', border: 'none', borderRadius: 6, padding: '8px 14px', fontSize: 13.5, fontWeight: 500, color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {tab}
+              {tab === 'Forms' && formsPending > 0 && <span style={badgeStyle}>{formsPending}</span>}
+              {tab === 'Meetings' && meetingsScheduled > 0 && <span style={badgeStyle}>{meetingsScheduled}</span>}
+            </button>
+          ))}
+        </div>
+          )
+        })()}
 
       </div>
 
@@ -230,88 +233,64 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               </div>
             </div>
 
-            {/* Personal details */}
-            <div className="ds-card">
-              <div className="ds-card-header">
-                <div className="ds-card-title">Personal details</div>
-              </div>
-              <div style={{ padding: '4px 20px 18px' }}>
-                {(() => {
-                  const Field = ({ label, children }: { label: string; children: ReactNode }) => (
-                    <div style={{ borderLeft: '2px solid var(--border)', paddingLeft: 10 }}>
-                      <div style={{ fontSize: 11.5, color: 'var(--text-3)', marginBottom: 3, fontWeight: 500 }}>{label}</div>
-                      <div style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500, lineHeight: 1.3 }}>{children}</div>
-                    </div>
-                  )
-                  const IdExpiry = ({ expiry, warn }: { expiry?: string; warn?: boolean }) => expiry
-                    ? warn
-                      ? <span style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--danger)', display: 'inline-block', flexShrink: 0 }} />{expiry}</span>
-                      : <>{expiry}</>
-                    : <>—</>
+            {/* Personal details — two cards */}
+            {(() => {
+              const IdExpiry = ({ expiry, warn }: { expiry?: string; warn?: boolean }) => expiry
+                ? warn
+                  ? <span style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--danger)', display: 'inline-block', flexShrink: 0 }} />{expiry}</span>
+                  : <>{expiry}</>
+                : <>—</>
 
-                  const MemberHeader = ({ initials, name }: { initials: string; name: string }) => (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                      <div className="ds-avatar" style={{ width: 32, height: 32, fontSize: 12, flexShrink: 0 }}>{initials}</div>
+              const Row = ({ label, children }: { label: string; children: ReactNode }) => (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, padding: '14px 20px' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-2)', flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: 13.5, color: 'var(--text-1)', fontWeight: 500, textAlign: 'right' }}>{children}</span>
+                </div>
+              )
+
+              const PersonCard = ({ initials, name, age, dob, occupation, income, email, idExpiry, warnExpiry, maritalStatus, children: childrenVal }: {
+                initials: string; name: string; age: string; dob: string; occupation: string; income: string; email: string; idExpiry?: string; warnExpiry?: boolean; maritalStatus: string; children?: string
+              }) => {
+                const rows = [
+                  { label: 'Age & DOB', value: <>{age} · {dob}</> },
+                  { label: 'Occupation', value: occupation },
+                  { label: 'Income', value: income },
+                  { label: 'Email', value: email },
+                  { label: 'ID Expiry', value: <IdExpiry expiry={idExpiry} warn={warnExpiry} /> },
+                  { label: 'Marital status', value: maritalStatus },
+                  ...(childrenVal ? [{ label: 'Children', value: childrenVal }] : []),
+                ]
+                return (
+                  <div className="ds-card" style={{ overflow: 'hidden' }}>
+                    <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
+                      <div className="ds-avatar" style={{ width: 30, height: 30, fontSize: 11, flexShrink: 0 }}>{initials}</div>
                       <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{name}</span>
                     </div>
-                  )
-
-                  if (activeMember === 'household') {
-                    return (
-                      <>
-                        <div style={{ display: 'flex', gap: 0 }}>
-                          {/* Jimmy column */}
-                          <div style={{ flex: 1, paddingRight: 20 }}>
-                            <MemberHeader initials={client.initials} name={client.name} />
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                              <Field label="Age & DOB">54 · {client.dob}</Field>
-                              <Field label="Occupation">{memberData.primary.occupation}</Field>
-                              <Field label="Income">{memberData.primary.income}</Field>
-                              <Field label="Email">{memberData.primary.email}</Field>
-                              <Field label="ID Expiry"><IdExpiry expiry={client.idExpiry} warn /></Field>
-                            </div>
-                          </div>
-                          {/* Sarah column */}
-                          <div style={{ flex: 1, paddingLeft: 20 }}>
-                            <MemberHeader initials={client.spouseInitials ?? ''} name={client.spouseName ?? ''} />
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                              <Field label="Age & DOB">52 · {client.spouseDob}</Field>
-                              <Field label="Occupation">{client.spouseOccupation}</Field>
-                              <Field label="Income">{client.spouseIncome}</Field>
-                              <Field label="Email">{memberData.spouse.email}</Field>
-                              <Field label="ID Expiry"><IdExpiry expiry={client.spouseIdExpiry} /></Field>
-                            </div>
-                          </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {rows.map((r, i) => (
+                        <div key={i}>
+                          {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
+                          <Row label={r.label}>{r.value as ReactNode}</Row>
                         </div>
-                        {/* Shared fields */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-                          <Field label="Marital Status">{memberData.primary.maritalStatus}</Field>
-                          {memberData.primary.children && <Field label="Children">{memberData.primary.children}</Field>}
-                        </div>
-                      </>
-                    )
-                  }
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
 
-                  const pmd = activeMember === 'spouse' ? memberData.spouse : memberData.primary
-                  const initials = activeMember === 'spouse' ? (client.spouseInitials ?? '') : client.initials
-                  const name = activeMember === 'spouse' ? (client.spouseName ?? '') : client.name
-                  return (
-                    <>
-                      <MemberHeader initials={initials} name={name} />
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
-                        <Field label="Age & DOB">{pmd.age} · {pmd.dob}</Field>
-                        <Field label="Occupation">{pmd.occupation}</Field>
-                        <Field label="Income">{pmd.income}</Field>
-                        <Field label="Email">{pmd.email}</Field>
-                        <Field label="ID Expiry"><IdExpiry expiry={pmd.idExpiry} warn={activeMember === 'primary' && pmd.idExpiry === 'Jan 2026'} /></Field>
-                        <Field label="Marital Status">{pmd.maritalStatus}</Field>
-                        {pmd.children && <Field label="Children">{pmd.children}</Field>}
-                      </div>
-                    </>
-                  )
-                })()}
-              </div>
-            </div>
+              const members = isJoint ? [
+                { initials: client.initials, name: client.name, age: '54', dob: client.dob, occupation: memberData.primary.occupation, income: memberData.primary.income, email: memberData.primary.email, idExpiry: client.idExpiry, warnExpiry: true, maritalStatus: memberData.primary.maritalStatus, children: client.children },
+                { initials: client.spouseInitials ?? '', name: client.spouseName ?? '', age: '52', dob: client.spouseDob ?? '—', occupation: memberData.spouse.occupation, income: memberData.spouse.income, email: memberData.spouse.email, idExpiry: client.spouseIdExpiry, warnExpiry: false, maritalStatus: memberData.spouse.maritalStatus, children: client.children },
+              ] : [
+                { initials: client.initials, name: client.name, age: memberData.primary.age, dob: client.dob, occupation: memberData.primary.occupation, income: memberData.primary.income, email: memberData.primary.email, idExpiry: client.idExpiry, warnExpiry: true, maritalStatus: memberData.primary.maritalStatus, children: client.children },
+              ]
+
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: isJoint ? '1fr 1fr' : '1fr', gap: 12 }}>
+                  {members.map(m => <PersonCard key={m.name} {...m} />)}
+                </div>
+              )
+            })()}
 
           </div>
 
@@ -445,27 +424,58 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
             <div className="ds-card">
               <div className="ds-card-header">
                 <div className="ds-card-title">Risk profile</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--warn)', display: 'inline-block' }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>Balanced</span>
-                </div>
               </div>
-              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-                {[
-                  { label: 'Client score', score: md.clientScore },
-                  { label: 'Adjusted (PJM)', score: md.pjmScore },
-                ].map(({ label, score }) => (
-                  <div key={label}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{label}</span>
-                      <span style={{ fontSize: 13.5, color: 'var(--text-2)' }}>{score}<span style={{ color: 'var(--text-3)' }}>/100</span></span>
-                    </div>
-                    <div style={{ height: 6, borderRadius: 3, background: 'var(--bg-3)', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${score}%`, borderRadius: 3, background: 'var(--warn)' }} />
-                    </div>
+              {(() => {
+                const ScoreBars = ({ clientScore, pjmScore }: { clientScore: number; pjmScore: number }) => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {[{ label: 'Client score', score: clientScore }, { label: 'Adjusted (PJM)', score: pjmScore }].map(({ label, score }) => (
+                      <div key={label}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
+                          <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{label}</span>
+                          <span style={{ fontSize: 13.5, color: 'var(--text-2)' }}>{score}<span style={{ color: 'var(--text-3)' }}>/100</span></span>
+                        </div>
+                        <div style={{ height: 6, borderRadius: 3, background: 'var(--bg-3)', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${score}%`, borderRadius: 3, background: 'var(--warn)' }} />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )
+
+                if (activeMember === 'household' && isJoint) {
+                  return (
+                    <div>
+                      <div style={{ padding: '14px 18px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                          <div className="ds-avatar" style={{ width: 24, height: 24, fontSize: 9, flexShrink: 0 }}>{client.initials}</div>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{client.name.split(' ')[0]}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 2 }}>Balanced</span>
+                        </div>
+                        <ScoreBars clientScore={memberData.primary.clientScore} pjmScore={memberData.primary.pjmScore} />
+                      </div>
+                      <div style={{ height: 1, background: 'var(--border)', margin: '0 18px' }} />
+                      <div style={{ padding: '14px 18px 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                          <div className="ds-avatar" style={{ width: 24, height: 24, fontSize: 9, flexShrink: 0 }}>{client.spouseInitials}</div>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{(client.spouseName ?? '').split(' ')[0]}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 2 }}>Balanced</span>
+                        </div>
+                        <ScoreBars clientScore={memberData.spouse.clientScore} pjmScore={memberData.spouse.pjmScore} />
+                      </div>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div style={{ padding: '14px 18px 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--warn)', display: 'inline-block' }} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>Balanced</span>
+                    </div>
+                    <ScoreBars clientScore={md.clientScore} pjmScore={md.pjmScore} />
+                  </div>
+                )
+              })()}
             </div>
 
           </div>
@@ -742,7 +752,12 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── Risk ── */}
       {activeTab === 'Risk' && (() => {
-        const people = [
+        const allowedInitials = new Set(
+          activeMember === 'household' ? [client.initials, client.spouseInitials].filter(Boolean) :
+          activeMember === 'spouse'    ? [client.spouseInitials] :
+          [client.initials]
+        )
+        const people = ([
           {
             initials: 'JJ', name: 'Jimmy Johnson',
             current: { label: 'Balanced', date: '8 Jan 2026', pjm: 61, client: 65, by: 'Jimmy Johnson (self)' },
@@ -759,7 +774,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               { date: '20 Mar 2024', pjm: 49, client: 52 },
             ],
           },
-        ]
+        ] as const).filter(p => allowedInitials.has(p.initials))
         return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
@@ -773,8 +788,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
                   <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
-                  <span className="ds-badge ds-badge-warn">{person.current.label}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 24 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PJM</span>
                       <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{person.current.pjm}</span>
@@ -896,22 +910,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
       {activeTab === 'Activity' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* Workflow banner */}
-          <div style={{ background: 'var(--accent-bg)', border: '1px solid rgba(79,110,247,0.18)', borderRadius: 'var(--radius-xl)', padding: '16px 18px', display: 'flex', gap: 14 }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)', marginBottom: 4 }}>Annual review preparation — workflow in progress</div>
-              <div style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.55, marginBottom: 10 }}>The system automatically contacted Jimmy &amp; Sarah Johnson 6 weeks ago to confirm availability for the upcoming Annual Portfolio Review. Jimmy has confirmed. Awaiting Sarah's response.</div>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-text)', borderRadius: 999, padding: '3px 10px', fontSize: 12.5, fontWeight: 500 }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                No action currently required from you
-              </span>
-              <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>Triggered automatically · 6 weeks ago</div>
-            </div>
-          </div>
-
           {/* Activity log */}
           <div className="ds-card">
             <div className="ds-card-header">
@@ -974,42 +972,42 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                     {i > 0 && <div style={{ height: 1, background: 'var(--border)' }} />}
                     <div
                       onClick={() => setExpandedActivity(isExpanded ? null : i)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', cursor: 'pointer', background: isExpanded ? 'var(--bg-2)' : undefined, transition: 'background 0.1s' }}
-                      onMouseEnter={e2 => { if (!isExpanded) (e2.currentTarget as HTMLDivElement).style.background = 'var(--bg-2)' }}
-                      onMouseLeave={e2 => { if (!isExpanded) (e2.currentTarget as HTMLDivElement).style.background = '' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', cursor: 'pointer', transition: 'background 0.1s' }}
+                      onMouseEnter={e2 => { (e2.currentTarget as HTMLDivElement).style.background = 'var(--bg-2)' }}
+                      onMouseLeave={e2 => { (e2.currentTarget as HTMLDivElement).style.background = '' }}
                     >
-                      <div className="ds-avatar ds-avatar-sm" style={{ background: e.initials === 'SY' ? 'var(--bg-3)' : 'var(--bg-hover)', flexShrink: 0 }}>{e.initials}</div>
+                      <div className="ds-avatar ds-avatar-sm" style={{ flexShrink: 0 }}>{e.initials}</div>
                       <div style={{ flex: 1, fontSize: 13.5 }}>
                         <span style={{ fontWeight: 600, color: 'var(--text-1)' }}>{e.name}</span>
                         <span style={{ color: 'var(--text-2)' }}> {e.action} </span>
                         <span style={{ color: 'var(--text-1)' }}>{e.subject}</span>
                       </div>
-                      <span style={{ fontSize: 13, color: 'var(--text-3)', flexShrink: 0 }}>{e.time}</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-2)', flexShrink: 0 }}>{e.time}</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
                     </div>
                     {isExpanded && (
-                      <div style={{ padding: '16px 20px 20px', background: 'var(--bg-2)', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <div style={{ padding: '16px 20px 20px', background: 'rgba(0,0,0,0.02)', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 14 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{e.timestamp}</span>
-                          <code style={{ fontSize: 11.5, color: 'var(--text-3)', background: 'var(--bg-3)', padding: '2px 7px', borderRadius: 4, fontFamily: 'monospace' }}>{e.hash}</code>
+                          <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>{e.timestamp}</span>
+                          <code style={{ fontSize: 11.5, color: 'var(--text-2)', background: 'var(--bg-3)', padding: '2px 7px', borderRadius: 4, fontFamily: 'monospace' }}>{e.hash}</code>
                         </div>
-                        <p style={{ margin: 0, fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{e.detail}</p>
+                        <p style={{ margin: 0, fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.6 }}>{e.detail}</p>
                         <div style={{ height: 1, background: 'var(--border)' }} />
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                           <div>
-                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>Actions taken</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-1)', marginBottom: 8 }}>Actions taken</div>
                             {e.actions.map((a, ai) => (
-                              <div key={ai} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-2)', marginBottom: 5 }}>
-                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 6 }} />
+                              <div key={ai} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-1)', marginBottom: 5 }}>
+                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-2)', flexShrink: 0, marginTop: 6 }} />
                                 {a}
                               </div>
                             ))}
                           </div>
                           <div>
-                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>Parties involved</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-1)', marginBottom: 8 }}>Parties involved</div>
                             {e.parties.map((p, pi) => (
-                              <div key={pi} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-2)', marginBottom: 5 }}>
-                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 6 }} />
+                              <div key={pi} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-1)', marginBottom: 5 }}>
+                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-2)', flexShrink: 0, marginTop: 6 }} />
                                 {p}
                               </div>
                             ))}
@@ -1027,112 +1025,192 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
       {/* ── Forms ── */}
       {activeTab === 'Forms' && (() => {
-        type FormEntry = { year: string; updated: string | null; status: string; statusClass: string }
-        type FormSection = { key: string; name: string; entries: FormEntry[] }
-        type Person = { initials: string; name: string; forms: FormSection[] }
+        type FormEntry = { date: string; status: 'Complete' | 'In progress' | 'Not started' }
+        type PersonData = { initials: string; name: string; entries: FormEntry[] }
+        type FormType = { key: string; name: string; people: PersonData[] }
+        const allowedInitials = new Set(
+          activeMember === 'household' ? [client.initials, client.spouseInitials].filter(Boolean) :
+          activeMember === 'spouse'    ? [client.spouseInitials] :
+          [client.initials]
+        )
 
-        const people: Person[] = [
+        const formTypes: FormType[] = [
           {
-            initials: 'JJ', name: 'Jimmy Johnson',
-            forms: [
-              { key: 'jj-fact', name: 'Fact Find', entries: [
-                { year: '2025', updated: '23 Jan 2026', status: 'Complete', statusClass: 'ds-badge-success' },
-                { year: '2024', updated: '15 Feb 2024', status: 'Complete', statusClass: 'ds-badge-success' },
-                { year: '2023', updated: '20 Jan 2023', status: 'Complete', statusClass: 'ds-badge-success' },
+            key: 'fact-find', name: 'Fact Find',
+            people: [
+              { initials: 'JJ', name: 'Jimmy Johnson', entries: [
+                { date: '23 Jan 2026', status: 'Complete' },
+                { date: '15 Feb 2024', status: 'Complete' },
+                { date: '20 Jan 2023', status: 'Complete' },
               ]},
-              { key: 'jj-risk', name: 'Risk Questionnaire', entries: [
-                { year: '2025', updated: '8 Jan 2026',  status: 'Complete', statusClass: 'ds-badge-success' },
-                { year: '2024', updated: '14 Feb 2024', status: 'Complete', statusClass: 'ds-badge-success' },
-                { year: '2023', updated: '3 Feb 2023',  status: 'Complete', statusClass: 'ds-badge-success' },
-                { year: '2022', updated: null,           status: 'Missing',  statusClass: 'ds-badge-default' },
+              { initials: 'SJ', name: 'Sarah Johnson', entries: [
+                { date: '23 Jan 2026', status: 'Complete' },
+                { date: '15 Feb 2024', status: 'Complete' },
               ]},
             ],
           },
           {
-            initials: 'SJ', name: 'Sarah Johnson',
-            forms: [
-              { key: 'sj-fact', name: 'Fact Find', entries: [
-                { year: '2025', updated: '23 Jan 2026', status: 'Complete',    statusClass: 'ds-badge-success' },
-                { year: '2024', updated: '15 Feb 2024', status: 'Complete',    statusClass: 'ds-badge-success' },
+            key: 'risk-q', name: 'Risk Questionnaire',
+            people: [
+              { initials: 'JJ', name: 'Jimmy Johnson', entries: [
+                { date: '8 Jan 2026',  status: 'Complete' },
+                { date: '14 Feb 2024', status: 'Complete' },
+                { date: '3 Feb 2023',  status: 'Complete' },
               ]},
-              { key: 'sj-risk', name: 'Risk Questionnaire', entries: [
-                { year: '2025', updated: '29 Mar 2025', status: 'In Progress', statusClass: 'ds-badge-warn' },
-                { year: '2024', updated: '14 Feb 2024', status: 'Complete',    statusClass: 'ds-badge-success' },
-                { year: '2023', updated: '3 Feb 2023',  status: 'Complete',    statusClass: 'ds-badge-success' },
+              { initials: 'SJ', name: 'Sarah Johnson', entries: [
+                { date: '29 Mar 2025', status: 'In progress' },
+                { date: '14 Feb 2024', status: 'Complete' },
+                { date: '3 Feb 2023',  status: 'Complete' },
               ]},
             ],
           },
-        ]
+        ].map(ft => ({ ...ft, people: ft.people.filter(p => allowedInitials.has(p.initials)) }))
+
+        const StatusBadge = ({ status }: { status: FormEntry['status'] }) => {
+          if (status === 'Complete') return (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, color: 'var(--success-text)', background: 'var(--success-bg)', borderRadius: 99, padding: '3px 9px' }}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Complete
+            </span>
+          )
+          if (status === 'In progress') return (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 500, color: 'var(--warn-text)', background: 'var(--warn-bg)', borderRadius: 99, padding: '3px 9px' }}>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              In progress
+            </span>
+          )
+          return <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 12, fontWeight: 500, color: 'var(--text-3)', background: 'var(--bg-2)', borderRadius: 99, padding: '3px 9px' }}>Not started</span>
+        }
+
+        const householdBadge = (ft: FormType) => {
+          const latestStatuses = ft.people.map(p => p.entries[0]?.status ?? 'Not started')
+          const allComplete = latestStatuses.every(s => s === 'Complete')
+          const anyInProgress = latestStatuses.some(s => s === 'In progress')
+          const anyNotStarted = latestStatuses.some(s => s === 'Not started')
+          if (allComplete) return { label: 'All complete', color: 'var(--success-text)' }
+          if (anyInProgress) return { label: 'In progress', color: 'var(--warn-text)' }
+          if (anyNotStarted) return { label: 'Action needed', color: 'var(--warn-text)' }
+          return { label: 'Action needed', color: 'var(--warn-text)' }
+        }
+
+        const attentionCount = formTypes.filter(ft => {
+          const b = householdBadge(ft)
+          return b.label !== 'All complete'
+        }).length
+
+        const allDone = attentionCount === 0
+
+        // Derive unique people and their per-person form status
+        const peopleMap = new Map<string, { initials: string; name: string }>()
+        formTypes.forEach(ft => ft.people.forEach(p => { if (!peopleMap.has(p.initials)) peopleMap.set(p.initials, { initials: p.initials, name: p.name }) }))
+        const people = Array.from(peopleMap.values())
+
+        const personStatus = (initials: string) => {
+          const statuses = formTypes.map(ft => {
+            const p = ft.people.find(p => p.initials === initials)
+            return p?.entries[0]?.status ?? 'Not started'
+          })
+          const complete = statuses.filter(s => s === 'Complete').length
+          const allComplete = statuses.every(s => s === 'Complete')
+          const anyInProgress = statuses.some(s => s === 'In progress')
+          return { complete, total: statuses.length, allComplete, anyInProgress }
+        }
 
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {people.map(person => (
-              <div key={person.name} className="ds-card" style={{ overflow: 'hidden' }}>
-
-                {/* Person header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px 14px' }}>
-                  <div className="ds-avatar">{person.initials}</div>
-                  <span style={{ fontWeight: 700, fontSize: 15.5, color: 'var(--text-1)' }}>{person.name}</span>
-                </div>
-                <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />
-
-                {/* Form sections */}
-                {person.forms.map((form, fi) => {
-                  const collapsed = formsOpen[form.key]
-                  const allComplete = form.entries.every(e => e.status === 'Complete')
-                  const hasInProgress = form.entries.some(e => e.status === 'In Progress')
-                  const summaryLabel = allComplete ? 'All complete' : hasInProgress ? 'In progress' : 'Incomplete'
-                  const summaryColor = allComplete ? 'var(--success)' : hasInProgress ? 'var(--warn-text)' : 'var(--text-3)'
-
-                  return (
-                    <div key={form.key}>
-                      {/* Inset divider between form sections */}
-                      {fi > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
-
-                      {/* Section header — no hover */}
-                      <div
-                        onClick={() => setFormsOpen(o => ({ ...o, [form.key]: !o[form.key] }))}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', cursor: 'pointer' }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0, transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
-                          <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-1)' }}>{form.name}</span>
-                        </div>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: summaryColor }}>{summaryLabel}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Per-person callout cards */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {people.map(p => {
+                const ps = personStatus(p.initials)
+                return (
+                  <div key={p.initials} className="stat-card" style={{ flex: 1 }}>
+                    <div style={{ flex: 1 }}>
+                      <div className="stat-label" style={{ color: 'var(--text-2)' }}>
+                        {p.name.split(' ')[0]}
                       </div>
+                      <div className="stat-num" style={{ fontSize: 20, fontWeight: 500, letterSpacing: 0 }}>
+                        {ps.allComplete ? 'Up to date' : 'Action needed'}
+                      </div>
+                    </div>
+                    {ps.allComplete
+                      ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="stat-icon" style={{ alignSelf: 'flex-start', flexShrink: 0 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="stat-icon" style={{ alignSelf: 'flex-start', flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    }
+                  </div>
+                )
+              })}
+            </div>
 
-                      {/* Year rows */}
-                      {!collapsed && (
-                        <div style={{ padding: '0 8px 8px' }}>
-                          {form.entries.map((entry, ei) => (
-                            <div key={entry.year}>
-                              {ei > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 4px' }} />}
+            {/* One card per person */}
+            {people.map(p => {
+              // Gather this person's rows across all form types
+              const personForms = formTypes.map(ft => {
+                const pd = ft.people.find(x => x.initials === p.initials)
+                const latest = pd?.entries[0] ?? null
+                const history = pd?.entries.slice(1) ?? []
+                return { ft, latest, history }
+              })
+              const personAllDone = personForms.every(({ latest }) => latest?.status === 'Complete')
+              return (
+                <div key={p.initials} className="ds-card" style={{ overflow: 'hidden' }}>
+                  {/* Card header */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 18px', borderBottom: '1px solid var(--border)' }}>
+                    <div className="ds-avatar ds-avatar-sm">{p.initials}</div>
+                    <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>{p.name}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: personAllDone ? 'var(--success-text)' : 'var(--warn-text)' }}>
+                      · {personAllDone ? 'Up to date' : 'Action needed'}
+                    </span>
+                  </div>
+                  {/* Form rows */}
+                  {personForms.map(({ ft, latest, history }, fi) => {
+                    const histKey = `${p.initials}-${ft.key}`
+                    const histExpanded = !!historyOpen[histKey]
+                    const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', padding: '12px 18px', gap: 12, cursor: 'pointer', transition: 'background 0.1s' }
+                    return (
+                      <div key={ft.key}>
+                        {fi > 0 && <div style={{ height: 1, background: 'var(--border)' }} />}
+                        {/* Latest entry row */}
+                        <div
+                          style={rowStyle}
+                          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-2)'}
+                          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = ''}
+                        >
+                          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)', flex: '0 0 40%' }}>{ft.name}</span>
+                          <span style={{ fontSize: 13, color: 'var(--text-2)', flex: '0 0 25%' }}>{latest?.date ?? '—'}</span>
+                          <div style={{ flex: 1 }}><StatusBadge status={latest?.status ?? 'Not started'} /></div>
+                          {history.length > 0 && (
+                            <button
+                              onClick={e => { e.stopPropagation(); setHistoryOpen(o => ({ ...o, [histKey]: !o[histKey] })) }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-3)', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}
+                            >
+                              {histExpanded ? 'Hide history' : 'Show history'}
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: histExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                          )}
+                        </div>
+                        {/* History */}
+                        {histExpanded && history.length > 0 && (
+                          <div style={{ background: 'rgba(0,0,0,0.02)', borderTop: '1px solid var(--border)' }}>
+                            {history.map((h, hi) => (
                               <div
+                                key={hi}
+                                style={{ display: 'flex', alignItems: 'center', padding: '10px 18px', gap: 12, cursor: 'pointer', transition: 'background 0.1s', borderBottom: hi < history.length - 1 ? '1px solid var(--border)' : 'none' }}
                                 onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-2)'}
                                 onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = ''}
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px 10px 30px', borderRadius: 'var(--radius-md)', cursor: 'default' }}
                               >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                  <span style={{ fontSize: 14, color: 'var(--text-1)' }}>{entry.updated ?? '—'}</span>
-                                </div>
-                                <span className={`ds-badge ${entry.statusClass}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  {entry.status === 'Complete' && (
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                  )}
-                                  {entry.status}
-                                </span>
+                                <span style={{ fontSize: 13, color: 'var(--text-2)', flex: '0 0 40%' }}>{ft.name}</span>
+                                <span style={{ fontSize: 13, color: 'var(--text-2)', flex: '0 0 25%' }}>{h.date}</span>
+                                <div style={{ flex: 1 }}><StatusBadge status={h.status} /></div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                    </div>
-                  )
-                })}
-
-              </div>
-            ))}
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
           </div>
         )
       })()}
