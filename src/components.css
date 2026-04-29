@@ -493,3 +493,36 @@ body {
 
 /* Tabs overflow on narrow */
 .ds-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Modal input focus */
+.modal-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Profile card — inline-styled cards that need shadow parity with ds-card */
+.profile-card { box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+
+/* White theme overrides */
+.theme-white { background: #ffffff; }
+.theme-white .ds-card,
+.theme-white .stat-card,
+.theme-white .profile-card { box-shadow: 0 6px 16px rgba(0,0,0,0.025), 0 2px 4px rgba(0,0,0,0.015);
+  border: 1px solid rgba(0,0,0,0.06); }
+
+/* Modal animations */
+@keyframes modal-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modal-panel-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+.modal-overlay {
+  animation: modal-overlay-in 0.18s ease forwards;
+}
+.modal-panel {
+  animation: modal-panel-in 0.2s ease forwards;
+}

@@ -94,7 +94,7 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
                 background: activeTab === tab ? '#f0f0f0' : 'transparent',
                 border: 'none',
                 borderRadius: 6,
-                padding: '5px 12px',
+                padding: '8px 14px',
                 fontSize: 13.5,
                 fontWeight: activeTab === tab ? 500 : 400,
                 color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)',
@@ -106,13 +106,13 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
           ))}
         </div>
 
-        <table className="ds-table" style={{ marginTop: 8 }}>
+        <table className="ds-table" style={{ marginTop: 24, border: '1px solid var(--border)', borderRadius: 8, borderCollapse: 'separate', borderSpacing: 0, overflow: 'hidden' }}>
           <thead>
             <tr>
-              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Client</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Account</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Form status</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: 'none' }}>Last updated</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Client</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Account</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Form status</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Last updated</th>
             </tr>
           </thead>
           <tbody>

@@ -15,6 +15,25 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   const [hoveredSeg, setHoveredSeg] = useState<string | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null)
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set())
+  const [theme, setTheme] = useState<'default' | 'white'>('default')
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editFields, setEditFields] = useState({
+    name: client.name,
+    email: client.email,
+    phone: client.phone,
+    dob: client.dob,
+    address: client.address ?? '',
+    occupation: client.occupation ?? '',
+    income: client.income ?? '',
+    maritalStatus: client.maritalStatus ?? '',
+    children: client.children ?? '',
+    spouseName: client.spouseName ?? '',
+    spouseEmail: client.spouseEmail ?? '',
+    spousePhone: client.spousePhone ?? '',
+    spouseDob: client.spouseDob ?? '',
+    spouseOccupation: client.spouseOccupation ?? '',
+    spouseIncome: client.spouseIncome ?? '',
+  })
   const isJoint = !!client.spouseInitials
   const [activeMember, setActiveMember] = useState<'primary' | 'spouse' | 'household'>(isJoint ? 'household' : 'primary')
   const lastName = client.name.split(' ').pop()
@@ -66,7 +85,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className={theme === 'white' ? 'theme-white' : ''} style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
 
       {/* ── White header zone: breadcrumb + name + tabs ── */}
       <div style={{ background: 'var(--bg)' }}>
@@ -104,19 +123,35 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               )}
               <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.025em', margin: 0 }}>{displayName}</h1>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="ds-btn ds-btn-secondary">Edit</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {/* Theme switcher */}
+              <div style={{ display: 'inline-flex', gap: 2, background: 'var(--bg-2)', borderRadius: 8, padding: 3 }}>
+                {(['default', 'white'] as const).map(t => (
+                  <button key={t} onClick={() => setTheme(t)} style={{ background: theme === t ? '#fff' : 'transparent', border: 'none', borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: theme === t ? 500 : 400, color: theme === t ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', boxShadow: theme === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s', textTransform: 'capitalize' }}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+              <button className="ds-btn ds-btn-secondary" onClick={() => setEditModalOpen(true)}>Edit</button>
             </div>
           </div>
 
         </div>
 
         {/* Tabs — outside the maxWidth container so border-bottom spans full width */}
-        <div className="ds-tabs r-tabs-pad">
-          {profileTabs.map(tab => (
-            <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
-          ))}
-        </div>
+        {theme === 'white' ? (
+          <div className="r-tabs-pad" style={{ paddingBottom: 16, display: 'flex', gap: 2 }}>
+            {profileTabs.map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? '#f0f0f0' : 'transparent', border: 'none', borderRadius: 6, padding: '8px 14px', fontSize: 13.5, fontWeight: 500, color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s' }}>{tab}</button>
+            ))}
+          </div>
+        ) : (
+          <div className="ds-tabs r-tabs-pad">
+            {profileTabs.map(tab => (
+              <button key={tab} className={`ds-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
+            ))}
+          </div>
+        )}
 
       </div>
 
@@ -168,23 +203,28 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
               </div>
-              <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {/* Active prompts — always visible, flagged */}
+              <div style={{ padding: '8px 20px 20px', display: 'flex', flexDirection: 'column' }}>
+                {/* Active prompts — always visible */}
                 {activePrompts.map((fact, i) => (
-                  <div key={`p${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--warn-bg)', borderRadius: 'var(--radius-md)', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--warn-text)', flexShrink: 0, marginTop: 3 }}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                    {fact}
+                  <div key={`p${i}`}>
+                    {i > 0 && <div style={{ height: 1, background: 'rgba(0,0,0,0.06)' }} />}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, padding: '13px 0', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.55 }}>
+                      <span>{fact}</span>
+                      <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 500, color: 'var(--warn-text)', background: 'rgba(180,120,0,0.1)', borderRadius: 20, padding: '3px 9px', marginTop: 1 }}>Action needed</span>
+                    </div>
                   </div>
                 ))}
                 {/* Relationship intelligence — collapsible */}
                 {softFactsExpanded && intelFacts.map((fact, i) => (
-                  <div key={`r${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 12px', background: 'var(--bg-2)', borderRadius: 'var(--radius-md)', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.5 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 7 }} />
-                    {fact}
+                  <div key={`r${i}`}>
+                    <div style={{ height: 1, background: 'rgba(0,0,0,0.06)' }} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, padding: '13px 0', fontSize: 13.5, color: 'var(--text-1)', lineHeight: 1.55 }}>
+                      <span>{fact}</span>
+                      <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 500, color: '#3b82f6', background: 'rgba(59,130,246,0.1)', borderRadius: 20, padding: '3px 9px', marginTop: 1 }}>Relationship</span>
+                    </div>
                   </div>
                 ))}
-                <button onClick={() => setSoftFactsExpanded(e => !e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 12.5, color: 'var(--accent)', padding: '4px 2px 0', display: 'flex', alignItems: 'center', gap: 4, alignSelf: 'flex-start' }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: softFactsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                <button onClick={() => setSoftFactsExpanded(e => !e)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font)', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', padding: '13px 0 0', textAlign: 'left' }}>
                   {softFactsExpanded ? 'Show less' : `${intelFacts.length} more notes`}
                 </button>
               </div>
@@ -723,42 +763,10 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-          {/* Household summary — prominent card */}
-          <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-lg)', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 24 }}>
-            {/* Risk band */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Household risk profile</span>
-              <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>Balanced</span>
-            </div>
-            {/* Divider */}
-            <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--border)', flexShrink: 0 }} />
-            {/* Per-person scores */}
-            <div style={{ display: 'flex', gap: 28, flex: 1 }}>
-              {people.map(p => (
-                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div className="ds-avatar">{p.initials}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text-2)' }}>{p.name.split(' ')[0]}</span>
-                    <div style={{ display: 'flex', gap: 18 }}>
-                      <div>
-                        <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>PJM</div>
-                        <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{p.current.pjm}</span>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 10, color: 'var(--text-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>Client</div>
-                        <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{p.current.client}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button className="ds-btn ds-btn-secondary" style={{ flexShrink: 0 }}>Download report</button>
-          </div>
 
           {/* Per-person cards */}
           {people.map(person => (
-            <div key={person.name} style={{ background: 'var(--bg)', borderRadius: 'var(--radius-lg)', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
+            <div key={person.name} className="profile-card" style={{ background: 'var(--bg)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
 
               {/* Card header */}
               <div style={{ padding: '14px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -766,6 +774,17 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                   <div className="ds-avatar ds-avatar-sm">{person.initials}</div>
                   <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{person.name}</span>
                   <span className="ds-badge ds-badge-warn">{person.current.label}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>PJM</span>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{person.current.pjm}</span>
+                    </div>
+                    <div style={{ width: 1, height: 28, background: 'var(--border)' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Client</span>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1 }}>{person.current.client}</span>
+                    </div>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button className="ds-btn ds-btn-secondary ds-btn-sm">Request new</button>
@@ -792,42 +811,37 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 </div>
               </div>
 
-              <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />
-
               {/* Score table: current + history */}
               {(() => {
-                const cols = '1fr 1fr 1fr 1fr'
-                const hdrStyle: React.CSSProperties = { fontSize: 13, fontWeight: 500, color: 'var(--text-2)' }
+                const allRows = [
+                  { date: person.current.date, pjm: person.current.pjm, client: person.current.client, by: person.current.by, current: true },
+                  ...person.history.map(h => ({ date: h.date, pjm: h.pjm, client: h.client, by: '', current: false })),
+                ]
                 return (
-                  <div style={{ padding: '0 20px 16px' }}>
-                    {/* Headers */}
-                    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '10px 0 8px' }}>
-                      <span style={hdrStyle}>Date</span>
-                      <span style={hdrStyle}>Adjusted (PJM)</span>
-                      <span style={hdrStyle}>Client score</span>
-                      <span style={hdrStyle}>Completed by</span>
-                    </div>
-                    <div style={{ height: 1, background: 'var(--border)' }} />
-                    {/* Current row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '12px 0', alignItems: 'center' }}>
-                      <span style={{ fontSize: 13.5, fontWeight: 500 }}>{person.current.date}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700 }}>{person.current.pjm}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700 }}>{person.current.client}</span>
-                      <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{person.current.by}</span>
-                    </div>
-                    {/* History rows */}
-                    {person.history.map((h, i) => (
-                      <div key={i}>
-                        <div style={{ height: 1, background: 'var(--border)' }} />
-                        <div style={{ display: 'grid', gridTemplateColumns: cols, padding: '11px 0', alignItems: 'center', opacity: 0.55 }}>
-                          <span style={{ fontSize: 13.5 }}>{h.date}</span>
-                          <span style={{ fontSize: 13.5, fontWeight: 600 }}>{h.pjm}</span>
-                          <span style={{ fontSize: 13.5, fontWeight: 600 }}>{h.client}</span>
-                          <span />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <table className="ds-table" style={{ borderTop: '1px solid var(--border)' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ padding: '12px 20px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Date</th>
+                        <th style={{ padding: '12px 20px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Adjusted (PJM)</th>
+                        <th style={{ padding: '12px 20px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Client score</th>
+                        <th style={{ padding: '12px 20px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Completed by</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allRows.map((r, i) => {
+                        const isLast = i === allRows.length - 1
+                        const tdStyle: React.CSSProperties = { padding: '15px 20px', borderBottom: isLast ? 'none' : '1px solid var(--border)', opacity: r.current ? 1 : 0.55 }
+                        return (
+                          <tr key={i}>
+                            <td style={{ ...tdStyle, fontWeight: 500 }}>{r.date}</td>
+                            <td style={tdStyle}>{r.pjm}</td>
+                            <td style={tdStyle}>{r.client}</td>
+                            <td style={{ ...tdStyle, color: 'var(--text-3)' }}>{r.by}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 )
               })()}
 
@@ -838,72 +852,45 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         )
       })()}
       {/* ── Meetings ── */}
-      {activeTab === 'Meetings' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <h2 style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Upcoming meetings
-          </h2>
-
-          {/* Upcoming meeting card */}
-          <div className="ds-card">
-            <div className="meeting-row" style={{ padding: '22px 22px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-1)' }}>Annual Portfolio Review</span>
-                  <span className="ds-badge ds-badge-warn">Scheduled</span>
-                </div>
-                <div style={{ fontSize: 13.5, color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    28 Feb 2026 · 2:00 – 3:00 PM
-                  </span>
-                  <span style={{ color: 'var(--border-strong)' }}>·</span>
-                  <span>Video call</span>
-                  <span style={{ color: 'var(--border-strong)' }}>·</span>
-                  <span>Catherine Fuller, Jimmy &amp; Sarah Johnson</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-2)', whiteSpace: 'nowrap' }}>Note-taker</span>
-                <div className={`ds-toggle${noteTaker ? ' on' : ''}`} onClick={() => setNoteTaker(v => !v)} />
-              </div>
-            </div>
-          </div>
-
-          {/* Past meetings */}
-          <h2 style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
-            Past meetings
-          </h2>
-          <div className="ds-card" style={{ overflow: 'hidden' }}>
-              {[
-                { date: '15 Jan 2026', time: '10:00 – 11:00 AM', title: 'Q4 Performance Review', format: 'In person', attendees: 'Catherine Fuller, Jimmy Johnson' },
-                { date: '12 Aug 2025', time: '11:30 AM – 12:30 PM', title: 'Mid-Year Check-In', format: 'Video call', attendees: 'Catherine Fuller, Jimmy & Sarah Johnson' },
-              ].map((m, i) => (
-                <div key={i}>
-                {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 20px' }} />}
-                <div className="meeting-row" style={{ padding: '22px 22px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-1)' }}>{m.title}</span>
-                    <span className="ds-badge ds-badge-success">Completed</span>
-                  </div>
-                  <div style={{ fontSize: 13.5, color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                      {m.date} · {m.time}
-                    </span>
-                    <span style={{ color: 'var(--border-strong)' }}>·</span>
-                    <span>{m.format}</span>
-                    <span style={{ color: 'var(--border-strong)' }}>·</span>
-                    <span>{m.attendees}</span>
-                  </div>
-                </div>
-                </div>
-              ))}
-            </div>
-        </div>
-      )}
+      {activeTab === 'Meetings' && (() => {
+        const allMeetings = [
+          { date: '28 Feb 2026', time: '2:00 – 3:00 PM', title: 'Annual Portfolio Review', format: 'Video call', attendees: 'Catherine Fuller, Jimmy & Sarah Johnson', status: 'upcoming' as const },
+          { date: '15 Jan 2026', time: '10:00 – 11:00 AM', title: 'Q4 Performance Review', format: 'In person', attendees: 'Catherine Fuller, Jimmy Johnson', status: 'completed' as const },
+          { date: '12 Aug 2025', time: '11:30 AM – 12:30 PM', title: 'Mid-Year Check-In', format: 'Video call', attendees: 'Catherine Fuller, Jimmy & Sarah Johnson', status: 'completed' as const },
+        ]
+        return (
+          <table className="ds-table profile-card" style={{ border: '1px solid var(--border)', borderRadius: 8, borderCollapse: 'separate', borderSpacing: 0, overflow: 'hidden' }}>
+            <thead>
+              <tr>
+                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Meeting</th>
+                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Date &amp; time</th>
+                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Format</th>
+                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Attendees</th>
+                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allMeetings.map((m, i) => {
+                const isLast = i === allMeetings.length - 1
+                const tdStyle: React.CSSProperties = { padding: '17px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)' }
+                return (
+                  <tr key={i}>
+                    <td style={{ ...tdStyle, fontWeight: 500, color: 'var(--text-1)' }}>{m.title}</td>
+                    <td style={tdStyle}>{m.date} · {m.time}</td>
+                    <td style={tdStyle}>{m.format}</td>
+                    <td style={tdStyle}>{m.attendees}</td>
+                    <td style={tdStyle}>
+                      {m.status === 'upcoming'
+                        ? <span className="ds-badge ds-badge-warn">Scheduled</span>
+                        : <span className="ds-badge ds-badge-success">Completed</span>}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )
+      })()}
 
       {/* ── Activity ── */}
       {activeTab === 'Activity' && (
@@ -984,10 +971,10 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                 const isExpanded = expandedActivity === i
                 return (
                   <div key={i}>
-                    {i > 0 && <div style={{ height: 1, background: 'var(--border)', margin: '0 18px' }} />}
+                    {i > 0 && <div style={{ height: 1, background: 'var(--border)' }} />}
                     <div
                       onClick={() => setExpandedActivity(isExpanded ? null : i)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 18px', cursor: 'pointer', background: isExpanded ? 'var(--bg-2)' : undefined, transition: 'background 0.1s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', cursor: 'pointer', background: isExpanded ? 'var(--bg-2)' : undefined, transition: 'background 0.1s' }}
                       onMouseEnter={e2 => { if (!isExpanded) (e2.currentTarget as HTMLDivElement).style.background = 'var(--bg-2)' }}
                       onMouseLeave={e2 => { if (!isExpanded) (e2.currentTarget as HTMLDivElement).style.background = '' }}
                     >
@@ -997,36 +984,32 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
                         <span style={{ color: 'var(--text-2)' }}> {e.action} </span>
                         <span style={{ color: 'var(--text-1)' }}>{e.subject}</span>
                       </div>
-                      <span style={{ fontSize: 12.5, color: 'var(--text-3)', flexShrink: 0 }}>{e.time}</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-3)', flexShrink: 0 }}>{e.time}</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
                     </div>
                     {isExpanded && (
-                      <div style={{ margin: '0 18px 12px', background: 'var(--bg-2)', borderRadius: 'var(--radius-md)', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {/* Timestamp + hash */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                          <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{e.timestamp}</span>
+                      <div style={{ padding: '16px 20px 20px', background: 'var(--bg-2)', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>{e.timestamp}</span>
                           <code style={{ fontSize: 11.5, color: 'var(--text-3)', background: 'var(--bg-3)', padding: '2px 7px', borderRadius: 4, fontFamily: 'monospace' }}>{e.hash}</code>
                         </div>
-                        {/* Detail */}
-                        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55 }}>{e.detail}</p>
+                        <p style={{ margin: 0, fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.6 }}>{e.detail}</p>
                         <div style={{ height: 1, background: 'var(--border)' }} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                          {/* Actions */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                           <div>
-                            <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Actions taken</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>Actions taken</div>
                             {e.actions.map((a, ai) => (
-                              <div key={ai} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12.5, color: 'var(--text-2)', marginBottom: 3 }}>
-                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 5 }} />
+                              <div key={ai} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-2)', marginBottom: 5 }}>
+                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 6 }} />
                                 {a}
                               </div>
                             ))}
                           </div>
-                          {/* Parties */}
                           <div>
-                            <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Parties involved</div>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)', marginBottom: 8 }}>Parties involved</div>
                             {e.parties.map((p, pi) => (
-                              <div key={pi} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 12.5, color: 'var(--text-2)', marginBottom: 3 }}>
-                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 5 }} />
+                              <div key={pi} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 13, color: 'var(--text-2)', marginBottom: 5 }}>
+                                <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-3)', flexShrink: 0, marginTop: 6 }} />
                                 {p}
                               </div>
                             ))}
@@ -1155,6 +1138,85 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
       })()}
 
       </div>{/* end content zone */}
+
+      {/* ── Edit personal details modal ── */}
+      {editModalOpen && (() => {
+        const Field = ({ label, fieldKey, span }: { label: string; fieldKey: keyof typeof editFields; span?: boolean }) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, gridColumn: span ? '1 / -1' : undefined }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)' }}>{label}</label>
+            <input
+              value={editFields[fieldKey]}
+              onChange={e => setEditFields(f => ({ ...f, [fieldKey]: e.target.value }))}
+              className="modal-input"
+              style={{ fontSize: 13.5, color: 'var(--text-1)', background: '#fff', border: '1px solid var(--border-md)', borderRadius: 'var(--radius-md)', padding: '8px 10px', fontFamily: 'var(--font)', width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+        )
+        return (
+          <>
+            {/* Overlay — also acts as flex centering container */}
+            <div
+              className="modal-overlay"
+              onClick={() => setEditModalOpen(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+            {/* Panel */}
+            <div
+              className="modal-panel"
+              onClick={e => e.stopPropagation()}
+              style={{ position: 'relative', zIndex: 101, background: 'var(--bg)', borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', width: 560, maxWidth: 'calc(100vw - 40px)', maxHeight: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}
+            >
+              {/* Header */}
+              <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-1)' }}>Edit personal details</span>
+                <button onClick={() => setEditModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-3)', display: 'flex', alignItems: 'center' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              {/* Body */}
+              <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {/* Primary */}
+                <div>
+                  {isJoint && <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 12 }}>{client.name}</div>}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 16px' }}>
+                    <Field label="Full name" fieldKey="name" span />
+                    <Field label="Email" fieldKey="email" />
+                    <Field label="Phone" fieldKey="phone" />
+                    <Field label="Date of birth" fieldKey="dob" />
+                    <Field label="Address" fieldKey="address" span />
+                    <Field label="Occupation" fieldKey="occupation" />
+                    <Field label="Income" fieldKey="income" />
+                    <Field label="Marital status" fieldKey="maritalStatus" />
+                    <Field label="Children" fieldKey="children" />
+                  </div>
+                </div>
+                {/* Spouse */}
+                {isJoint && (
+                  <div>
+                    <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)', marginBottom: 12 }}>{client.spouseName}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 16px' }}>
+                      <Field label="Full name" fieldKey="spouseName" span />
+                      <Field label="Email" fieldKey="spouseEmail" />
+                      <Field label="Phone" fieldKey="spousePhone" />
+                      <Field label="Date of birth" fieldKey="spouseDob" />
+                      <Field label="Occupation" fieldKey="spouseOccupation" />
+                      <Field label="Income" fieldKey="spouseIncome" />
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Footer */}
+              <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button className="ds-btn ds-btn-secondary" onClick={() => setEditModalOpen(false)}>Cancel</button>
+                <button className="ds-btn ds-btn-primary" onClick={() => setEditModalOpen(false)}>Save changes</button>
+              </div>
+            </div>
+            </div>
+          </>
+        )
+      })()}
+
     </div>
   )
 }
