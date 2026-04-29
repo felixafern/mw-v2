@@ -6,9 +6,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
   const profileTabs = ['Overview', 'Holdings', 'Risk', 'Meetings', 'Activity', 'Forms'] as const
   type ProfileTab = typeof profileTabs[number]
   const [activeTab, setActiveTab] = useState<ProfileTab>('Overview')
-  const [formsOpen, setFormsOpen] = useState<Record<string, boolean>>({})
   const [historyOpen, setHistoryOpen] = useState<Record<string, boolean>>({})
-  const [noteTaker, setNoteTaker] = useState(false)
   const [softFactsExpanded, setSoftFactsExpanded] = useState(false)
   const [letterExpanded, setLetterExpanded] = useState(false)
   const [riskMenuOpen, setRiskMenuOpen] = useState<string | null>(null)
@@ -1040,7 +1038,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
               ]},
             ],
           },
-        ].map(ft => ({ ...ft, people: ft.people.filter(p => allowedInitials.has(p.initials)) }))
+        ].map(ft => ({ ...ft, people: ft.people.filter(p => allowedInitials.has(p.initials)) })) as FormType[]
 
         const StatusBadge = ({ status }: { status: FormEntry['status'] }) => {
           if (status === 'Complete') return (
@@ -1073,8 +1071,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           const b = householdBadge(ft)
           return b.label !== 'All complete'
         }).length
-
-        const allDone = attentionCount === 0
 
         // Derive unique people and their per-person form status
         const peopleMap = new Map<string, { initials: string; name: string }>()
