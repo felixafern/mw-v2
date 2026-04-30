@@ -10,7 +10,7 @@ function App() {
 
   return (
     <div className="app-root">
-      <aside className="ds-sidebar" onWheel={e => e.stopPropagation()} style={{ background: 'var(--bg)', padding: '0 14px', width: collapsed ? 56 : 232, flexShrink: 0, transition: 'width 0.2s ease', borderRight: '1px solid var(--border)', '--text-2': '#444444' } as React.CSSProperties}>
+      <aside className="ds-sidebar" onWheel={e => e.stopPropagation()} style={{ background: '#f9f9f9', padding: '0 14px', width: collapsed ? 56 : 232, flexShrink: 0, transition: 'width 0.2s ease', borderRight: '1px solid var(--border)', '--text-2': '#444444' } as React.CSSProperties}>
         {/* Logo — hidden when collapsed */}
         {!collapsed && (
           <div className="ds-sidebar-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, overflow: 'hidden', padding: '0 0 8px' }}>
