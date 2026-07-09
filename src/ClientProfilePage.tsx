@@ -1,11 +1,21 @@
 import { useState, type ReactNode } from 'react'
-import type { Client } from './data'
+import { formatReviewDate, reviewStatus, type Client } from './data'
+import { type PrepStatus } from './prepPack'
+import PrepPackModal from './PrepPackModal'
 
 
-export default function ClientProfilePage({ client, onBack }: { client: Client; onBack: () => void }) {
-  const profileTabs = ['Overview', 'Holdings', 'Risk', 'Meetings', 'Activity', 'Forms'] as const
+export default function ClientProfilePage({ client, onBack, initialTab, prepStatus, onRequestPrepPack }: {
+  client: Client
+  onBack: () => void
+  initialTab?: string
+  prepStatus: PrepStatus
+  onRequestPrepPack: (c: Client, notes?: string) => void
+}) {
+  const profileTabs = ['Overview', 'Holdings', 'Risk', 'Reviews', 'Activity', 'Forms'] as const
   type ProfileTab = typeof profileTabs[number]
-  const [activeTab, setActiveTab] = useState<ProfileTab>('Overview')
+  const isProfileTab = (t?: string): t is ProfileTab => !!t && (profileTabs as readonly string[]).includes(t)
+  const [activeTab, setActiveTab] = useState<ProfileTab>(isProfileTab(initialTab) ? initialTab : 'Overview')
+  const [requestOpen, setRequestOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState<Record<string, boolean>>({})
   const [softFactsExpanded, setSoftFactsExpanded] = useState(false)
   const [letterExpanded, setLetterExpanded] = useState(false)
@@ -139,7 +149,6 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
             { initials: 'SJ', statuses: ['Complete', 'In progress'] },
           ].filter(p => allowedForTabs.has(p.initials))
             .reduce((n, p) => n + p.statuses.filter(s => s !== 'Complete').length, 0)
-          const meetingsScheduled = 1 // upcoming meetings count
           const badgeStyle = { fontSize: 11, fontWeight: 600, color: 'var(--text-3)', borderRadius: 4, padding: '1px 5px', lineHeight: '16px' } as const
           return (
         <div className="r-tabs-pad" style={{ paddingBottom: 16, display: 'flex', gap: 2, maxWidth: 1750, margin: '0 auto', marginTop: 36 }}>
@@ -147,7 +156,7 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
             <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? '#f0f0f0' : 'transparent', border: 'none', borderRadius: 6, padding: '8px 14px', fontSize: 13.5, fontWeight: 500, color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)', cursor: 'pointer', fontFamily: 'var(--font)', transition: 'all 0.15s', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               {tab}
               {tab === 'Forms' && formsPending > 0 && <span style={badgeStyle}>{formsPending}</span>}
-              {tab === 'Meetings' && meetingsScheduled > 0 && <span style={badgeStyle}>{meetingsScheduled}</span>}
+              {tab === 'Reviews' && prepStatus !== 'none' && <span style={{ ...badgeStyle, color: prepStatus === 'ready' ? 'var(--success-text)' : 'var(--warn-text)' }}>1</span>}
             </button>
           ))}
         </div>
@@ -296,58 +305,40 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
             {/* Next meeting */}
-            <div className="ds-card">
-              {/* Top: date + title + time */}
-              <div style={{ padding: '22px 24px', display: 'flex', gap: 18, alignItems: 'flex-start' }}>
-                {/* Date block */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg-2)', borderRadius: 'var(--radius-md)', padding: '8px 14px', flexShrink: 0, minWidth: 56 }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>Feb</span>
-                  <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', lineHeight: 1.1, letterSpacing: '-0.03em', marginTop: 2 }}>28</span>
+            <div
+              role="button" tabIndex={0}
+              style={{ padding: '6px', background: '#eef2fe', border: '1px solid #d8e0fc', borderRadius: 10, boxShadow: '0 6px 16px rgba(0,0,0,0.025), 0 2px 4px rgba(0,0,0,0.015)', cursor: 'pointer', transition: 'background 0.1s', fontFamily: 'var(--font)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#e6ecfd')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#eef2fe')}
+            >
+              <div style={{ background: '#fff', borderRadius: 6, padding: '18px 22px 18px' }}>
+                <div style={{ fontSize: 12.5, color: 'var(--text-2)', marginBottom: 6 }}>
+                  Next up
                 </div>
-                {/* Title + badge + meta */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>Annual Portfolio Review</span>
-                    <span className="ds-badge ds-badge-warn" style={{ flexShrink: 0 }}>Awaiting confirmation</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span>2:00 – 3:00 PM</span>
-                    <span style={{ color: 'var(--border-strong)' }}>·</span>
-                    <span>Video call</span>
-                  </div>
+                <div style={{ fontSize: 21, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.025em', lineHeight: 1.2, marginBottom: 8 }}>
+                  Annual Portfolio Review
                 </div>
-              </div>
-
-              {/* Divider */}
-              <div style={{ borderTop: '1px solid var(--border)', margin: '0 24px' }} />
-
-              {/* Bottom: meta rows + actions */}
-              <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {/* Client / type row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Johnson Household · Annual review</span>
+                <div style={{ fontSize: 13.5, color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>Sat 28 February</span>
+                  <span style={{ color: 'var(--border-strong)' }}>·</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span>2:00 – 3:00 PM</span>
+                  <span style={{ color: 'var(--border-strong)' }}>·</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                  <span>Video call</span>
                 </div>
-                {/* Attendees row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-3)', flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  {/* Avatar stack */}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {[{ initials: 'CF' }, { initials: 'JJ' }, { initials: 'SJ' }].map((a, i) => (
-                      <div key={a.initials} className="ds-avatar" style={{ width: 22, height: 22, fontSize: 8.5, border: '2px solid var(--bg)', marginLeft: i === 0 ? 0 : -6, zIndex: 3 - i }}>
-                        {a.initials}
-                      </div>
-                    ))}
-                  </div>
-                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Catherine Fuller, Jimmy &amp; Sarah Johnson</span>
-                </div>
-                {/* Action buttons */}
-                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                  <button className="ds-btn ds-btn-secondary" style={{ fontSize: 13, gap: 5 }}>
-                    Prepare briefing
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-                  </button>
-                  <button className="ds-btn ds-btn-secondary" style={{ fontSize: 13 }}>View meeting</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 16, flexWrap: 'wrap' }}>
+                  {[{ initials: 'CF', name: 'Catherine Fuller' }, { initials: 'JJ', name: 'Jimmy Johnson' }, { initials: 'SJ', name: 'Sarah Johnson' }].map((p, i) => (
+                    <div key={p.initials + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid var(--border)', borderRadius: 7, padding: '3px 9px 3px 4px' }}>
+                      <div className="ds-avatar ds-avatar-sm">{p.initials}</div>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>{p.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -839,44 +830,92 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
         </div>
         )
       })()}
-      {/* ── Meetings ── */}
-      {activeTab === 'Meetings' && (() => {
-        const allMeetings = [
-          { date: '28 Feb 2026', time: '2:00 – 3:00 PM', title: 'Annual Portfolio Review', format: 'Video call', attendees: 'Catherine Fuller, Jimmy & Sarah Johnson', status: 'upcoming' as const },
-          { date: '15 Jan 2026', time: '10:00 – 11:00 AM', title: 'Q4 Performance Review', format: 'In person', attendees: 'Catherine Fuller, Jimmy Johnson', status: 'completed' as const },
-          { date: '12 Aug 2025', time: '11:30 AM – 12:30 PM', title: 'Mid-Year Check-In', format: 'Video call', attendees: 'Catherine Fuller, Jimmy & Sarah Johnson', status: 'completed' as const },
-        ]
+      {/* ── Reviews ── */}
+      {activeTab === 'Reviews' && (() => {
+        const status = reviewStatus(client)
+        const statusMeta = status === 'booked'
+          ? { label: 'Booked', badge: 'ds-badge ds-badge-success' }
+          : status === 'overdue'
+          ? { label: 'Overdue', badge: 'ds-badge ds-badge-danger' }
+          : { label: 'Not booked', badge: 'ds-badge ds-badge-default' }
         return (
-          <table className="ds-table profile-card" style={{ border: '1px solid var(--border)', borderRadius: 8, borderCollapse: 'separate', borderSpacing: 0, overflow: 'hidden' }}>
-            <thead>
-              <tr>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Meeting</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Date &amp; time</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Format</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Attendees</th>
-                <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allMeetings.map((m, i) => {
-                const isLast = i === allMeetings.length - 1
-                const tdStyle: React.CSSProperties = { padding: '17px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)' }
-                return (
-                  <tr key={i}>
-                    <td style={{ ...tdStyle, fontWeight: 500, color: 'var(--text-1)' }}>{m.title}</td>
-                    <td style={tdStyle}>{m.date} · {m.time}</td>
-                    <td style={tdStyle}>{m.format}</td>
-                    <td style={tdStyle}>{m.attendees}</td>
-                    <td style={tdStyle}>
-                      {m.status === 'upcoming'
-                        ? <span className="ds-badge ds-badge-warn">Scheduled</span>
-                        : <span className="ds-badge ds-badge-success">Completed</span>}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Next review + prep pack action */}
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', marginBottom: 10 }}>Next review</div>
+            <div className="ds-card" style={{ border: '1px solid var(--border)' }}>
+            <div style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-1)' }}>Annual Portfolio Review</span>
+                  <span className={statusMeta.badge}>{statusMeta.label}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8, fontSize: 13, color: 'var(--text-2)' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                    Due {formatReviewDate(client.reviewDueDate)}{client.reviewBookedDate ? ` · Booked ${formatReviewDate(client.reviewBookedDate)}` : ''}
+                  </span>
+                </div>
+              </div>
+
+              {/* action area — request button OR pending / ready state */}
+              <div style={{ flexShrink: 0 }}>
+                {prepStatus === 'requested' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--warn-bg)', border: '1px solid var(--warn-border)', borderRadius: 8, padding: '12px 16px', maxWidth: 320 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn-text)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--warn-text)' }}>Prep pack requested</div>
+                      <div style={{ fontSize: 12, color: 'var(--warn-text)', opacity: 0.85, marginTop: 1 }}>Awaiting preparation</div>
+                    </div>
+                  </div>
+                ) : prepStatus === 'ready' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--success-bg)', border: '1px solid var(--success-border)', borderRadius: 8, padding: '12px 16px', maxWidth: 320 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success-text)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success-text)' }}>Prep pack ready</div>
+                      <div style={{ fontSize: 12, color: 'var(--success-text)', opacity: 0.85, marginTop: 1 }}>Prepared by the Key CRM team</div>
+                    </div>
+                  </div>
+                ) : (
+                  <button className="ds-btn ds-btn-accent" onClick={() => setRequestOpen(true)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
+                    Request meeting pack
+                  </button>
+                )}
+              </div>
+            </div>
+            </div>
+          </div>
+
+          {/* Previous reviews — historic meeting packs the adviser requested in prior
+              years. Smaller than the current-review card so the focus stays on the
+              upcoming review. Not interactive. */}
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', marginBottom: 10 }}>Previous reviews</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { year: '2025', date: '18 Feb 2025', title: 'Annual Portfolio Review' },
+                { year: '2024', date: '02 Mar 2024', title: 'Retirement Planning Review' },
+                { year: '2023', date: '21 Feb 2023', title: 'Annual Review & Rebalance' },
+              ].map(r => (
+                <div key={r.year} className="ds-card" style={{ border: '1px solid var(--border)', padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-3)', width: 34, flexShrink: 0 }}>{r.year}</span>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-1)' }}>{r.title}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 5 }}>Reviewed {r.date}</div>
+                    </div>
+                  </div>
+                  <span className="ds-badge ds-badge-default" style={{ flexShrink: 0 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    Meeting pack
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          </div>
         )
       })()}
 
@@ -1251,6 +1290,15 @@ export default function ClientProfilePage({ client, onBack }: { client: Client; 
           </>
         )
       })()}
+
+      {requestOpen && (
+        <PrepPackModal
+          client={displayName}
+          meeting={formatReviewDate(client.reviewBookedDate ?? client.reviewDueDate)}
+          onClose={() => setRequestOpen(false)}
+          onSubmit={(notes) => onRequestPrepPack(client, notes)}
+        />
+      )}
 
     </div>
   )

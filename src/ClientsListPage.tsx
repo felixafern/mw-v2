@@ -5,14 +5,6 @@ const tabs = ['All Clients', 'Live', 'Onboarding'] as const
 type Tab = typeof tabs[number]
 
 function AccountBadges({ type }: { type: string }) {
-  if (type === 'live-joint') {
-    return (
-      <div style={{ display: 'flex', gap: 4 }}>
-        <span className="ds-badge ds-badge-success">Live Client</span>
-        <span className="ds-badge ds-badge-accent">Joint</span>
-      </div>
-    )
-  }
   if (type === 'onboarding') {
     return <span className="ds-badge ds-badge-warn">Onboarding</span>
   }
@@ -118,7 +110,7 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
           <tbody>
             {filtered.map((c, i) => {
               const isLast = i === filtered.length - 1
-              const tdStyle: React.CSSProperties = { padding: '17px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)' }
+              const tdStyle: React.CSSProperties = { padding: '13px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)' }
               return (
                 <tr key={c.name} onClick={() => onSelect(c)} style={{ cursor: 'pointer', borderBottom: 'none' }}>
                   <td style={tdStyle}>
