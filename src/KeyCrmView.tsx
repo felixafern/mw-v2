@@ -4,7 +4,7 @@ import {
   ACCENT, REQUESTED, SOURCED, IRESS, PREP_TASKS_SEED, ITEM_NOTE_SEED, relativeToMeeting,
   type Req, type FileType, type PrepRequest, type RequestStatus,
 } from './prepPack'
-import { FileTag, FileIcon, PackSection } from './prepPackUi'
+import { FileTag, PackSection } from './prepPackUi'
 import CommentThread, { type Comment } from './CommentThread'
 
 /* A prep-task row as rendered in the CRM checklist: the seeded standing checks
