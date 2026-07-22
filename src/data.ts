@@ -54,6 +54,20 @@ export function formatReviewDate(iso?: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+// Assets under management at or above this threshold flag a client as high net
+// worth / sophisticated investor. £1m of managed assets is a common private-client
+// bar and sits comfortably above the FCA net-asset test for HNW certification.
+export const HNW_AUM_THRESHOLD = 1_000_000
+
+// AUM is stored as a display string (e.g. "£1,340,000"); strip to a number.
+export function aumValue(c: Client): number {
+  return Number(c.aum.replace(/[^0-9]/g, '')) || 0
+}
+
+export function isHighNetWorth(c: Client): boolean {
+  return aumValue(c) >= HNW_AUM_THRESHOLD
+}
+
 const baseClients: Client[] = [
   {
     name: 'Jimmy Johnson',
@@ -282,7 +296,7 @@ const baseClients: Client[] = [
 
 const FIRST = ['James', 'Emma', 'William', 'Sophia', 'Henry', 'Charlotte', 'George', 'Amelia', 'Jack', 'Isla', 'Oscar', 'Ava', 'Harry', 'Mia', 'Leo', 'Grace', 'Arthur', 'Freya', 'Noah', 'Ruby']
 const LAST = ['Carter', 'Bennett', 'Hughes', 'Patel', 'Reynolds', 'Coleman', 'Fletcher', 'Hawkins', 'Marsh', 'Norton', 'Pearce', 'Quinn', 'Sutton', 'Vaughn', 'Wallace']
-const ADVISERS = ['Catherine Fuller', 'David Hughes', 'Priya Patel', 'Mark Reynolds']
+export const ADVISERS = ['Catherine Fuller', 'David Hughes', 'Priya Patel', 'Mark Reynolds']
 const RISK = ['Cautious', 'Balanced', 'Adventurous']
 const ACCOUNTS: Client['account'][] = ['live', 'live-joint', 'onboarding']
 const FORMS: Client['formStatus'][] = ['complete', 'in-progress', 'not-started']
@@ -306,8 +320,10 @@ function generateClients(n: number): Client[] {
     const account = ACCOUNTS[i % ACCOUNTS.length]
     const [city, postcode] = CITIES[i % CITIES.length]
     const aum = 60 + ((i * 37) % 1940) // £k, 60k–2m
+    // Roughly one in seven clients has no review due date recorded yet.
+    const hasDue = i % 7 !== 0
     const due = addDays(base, (i % 65) * 7 + ((i * 3) % 5))
-    const hasBooking = i % 5 < 3
+    const hasBooking = hasDue && i % 5 < 3
     const client: Client = {
       name,
       initials: first[0] + last[0],
@@ -324,8 +340,8 @@ function generateClients(n: number): Client[] {
       joinDate: `${MONTHS[(i * 3) % 12]} ${2012 + (i % 14)}`,
       assetsM: Math.round((aum / 1000 + 0.05) * 100) / 100,
       liabilitiesK: 8 + ((i * 13) % 240),
-      reviewDueDate: isoDate(due),
     }
+    if (hasDue) client.reviewDueDate = isoDate(due)
     if (account === 'live-joint') {
       const sFirst = FIRST[(i + 7) % FIRST.length]
       client.spouseName = `${sFirst} ${last}`

@@ -106,7 +106,7 @@ export default function PrepPackModal({ client, meeting, onClose, onSubmit }: { 
             </div>
             {/* auto-captured request metadata (read-only) */}
             <div style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 12 }}>
-              Requested by Catherine Fuller · Key CRM: Priya Shah · 1 Jul 2026
+              Requested by Catherine Fuller · 1 Jul 2026
             </div>
           </div>
 

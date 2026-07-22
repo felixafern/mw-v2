@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { clients, reviewStatus, formatReviewDate, TODAY, type Client, type ReviewStatus } from './data'
-import { type PrepStatus } from './prepPack'
-import PrepPackModal from './PrepPackModal'
+
+type FilterKey = ReviewStatus | 'all' | 'no-due-date'
 
 const STATUS_META: Record<ReviewStatus, { label: string; badge: string }> = {
   'not-booked': { label: 'Not booked', badge: 'ds-badge ds-badge-default' },
@@ -17,16 +17,22 @@ const PAST_REVIEWS: PastReview[] = [
   { name: 'Yusuf Rahman', account: 'live', dueDate: '2025-08-29', completedDate: '2025-08-27' },
 ]
 
-// Bar colour for the expected-volume chart.
+// Bar colours for the expected-volume chart. The nearest upcoming months split
+// into a "due" bar and a "booked" bar; later months show a single due bar.
 const BAR_COLOR = '#4F6DF7'
+const BOOKED_BAR_COLOR = '#16a34a'
 
-const FILTERS: (ReviewStatus | 'all')[] = ['all', 'not-booked', 'overdue', 'booked']
+// Number of upcoming months shown as split due/booked bars.
+const SPLIT_MONTHS = 2
 
-const FILTER_LABEL: Record<ReviewStatus | 'all', string> = {
+const FILTERS: FilterKey[] = ['all', 'not-booked', 'overdue', 'booked', 'no-due-date']
+
+const FILTER_LABEL: Record<FilterKey, string> = {
   all: 'All reviews',
   'not-booked': STATUS_META['not-booked'].label,
   overdue: STATUS_META.overdue.label,
   booked: STATUS_META.booked.label,
+  'no-due-date': 'No due date',
 }
 
 const SHOW_BOOKING_KEY = 'reviews-show-booking-date'
@@ -35,16 +41,14 @@ function loadShowBooking(): boolean {
   return localStorage.getItem(SHOW_BOOKING_KEY) !== 'false'
 }
 
-export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrepPack }: {
+export default function ReviewsListPage({ onSelect }: {
   onSelect: (c: Client) => void
-  prepStatusFor: (name: string) => PrepStatus
-  onRequestPrepPack: (c: Client, notes?: string) => void
 }) {
-  const [activeFilter, setActiveFilter] = useState<ReviewStatus | 'all'>('all')
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
   const [search, setSearch] = useState('')
   const [showBooking, setShowBooking] = useState<boolean>(loadShowBooking)
+  const [showPast, setShowPast] = useState(false)
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null)
-  const [requestClient, setRequestClient] = useState<Client | null>(null)
   const [page, setPage] = useState(0)
 
   const toggleShowBooking = () => {
@@ -56,6 +60,7 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
   }
 
   const allReviews = clients.filter(c => c.reviewDueDate)
+  const noDueReviews = clients.filter(c => !c.reviewDueDate)
 
   // Expected review volume bucketed by due month over a 12-month window, split by
   // review status. The window starts at the earliest review's month so every
@@ -92,14 +97,16 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
   const tickStep = Math.max(1, Math.ceil(maxCount / 2))
   const axisMax = tickStep * Math.ceil(maxCount / tickStep)
 
-  const reviews = allReviews.filter(c => {
-    const matchesFilter = activeFilter === 'all' || reviewStatus(c) === activeFilter
+  const source = activeFilter === 'no-due-date' ? noDueReviews : allReviews
+  const reviews = source.filter(c => {
+    const matchesFilter = activeFilter === 'all' || activeFilter === 'no-due-date' || reviewStatus(c) === activeFilter
     const matchesSearch = !search || c.name.toLowerCase().includes(search.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
-  // Past (completed) reviews only make sense under "All reviews"; still honour search.
-  const pastReviews = activeFilter === 'all'
+  // Past (completed) reviews are historical bookings — surfaced only when the
+  // "Show past" switch is on, and never under the "No due date" filter.
+  const pastReviews = showPast && activeFilter !== 'no-due-date'
     ? PAST_REVIEWS.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()))
     : []
 
@@ -110,61 +117,79 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
   const totalPages = Math.max(1, Math.ceil(reviews.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages - 1)
   const pageReviews = reviews.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE)
-  const showPast = currentPage === totalPages - 1
+  const onLastPage = currentPage === totalPages - 1
 
 
   return (
     <div className="r-page-pad" style={{ display: 'flex', flexDirection: 'column', gap: 24, minHeight: '100%', maxWidth: 1750, margin: '0 auto' }}>
 
-      {/* Title */}
-      <div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.025em', margin: 0 }}>
-          Reviews
-        </h1>
-        <p style={{ fontSize: 13.5, color: 'var(--text-2)', marginTop: 4 }}>Clients due a review and their booking status</p>
-      </div>
-
       {/* Expected review volume */}
       <div className="profile-card" style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '18px 22px 16px' }}>
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 32 }}>
           <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>Expected review volume</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, color: 'var(--text-2)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: BAR_COLOR }} />
+              Due
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: BOOKED_BAR_COLOR }} />
+              Booked
+            </span>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <div style={{ flex: 1 }}>
             {/* Plot area: bars */}
             <div style={{ position: 'relative', height: 290 }}>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 32 }}>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 0 }}>
                 {monthly.map((m, i) => {
                   const hovered = hoveredMonth === i
                   // Soft tint by default; the hovered bar and the current month read at full strength.
                   const full = hovered || m.isCurrent
+                  // The nearest upcoming months break out into due vs booked bars.
+                  const split = i < SPLIT_MONTHS
+                  const bookedCount = m.counts.booked
+                  const barCol = (value: number, color: string, key: string) => (
+                    <div key={key} style={{ position: 'relative', width: split ? 22 : '100%', maxWidth: split ? 22 : 44, height: `${(value / axisMax) * 100}%`, minHeight: value ? 3 : 0, background: color, borderRadius: 3, opacity: full ? 1 : 0.45, transition: 'opacity 0.15s' }}>
+                      {value > 0 && !hovered && (
+                        <span style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 4, fontSize: 11, color: 'var(--text-2)', lineHeight: 1 }}>{value}</span>
+                      )}
+                    </div>
+                  )
                   return (
                     <div
                       key={i}
                       onMouseEnter={() => setHoveredMonth(i)}
                       onMouseLeave={() => setHoveredMonth(null)}
-                      style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', position: 'relative' }}
+                      style={{ flex: 1, height: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 6, position: 'relative' }}
                     >
                       {/* Tooltip */}
                       {hovered && (
                         <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 8, background: 'var(--text-1)', color: 'var(--bg)', borderRadius: 6, padding: '8px 10px', fontSize: 12, whiteSpace: 'nowrap', zIndex: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-                          <div style={{ fontWeight: 600 }}>{m.dateLabel} · {m.total} review{m.total === 1 ? '' : 's'}</div>
+                          <div style={{ fontWeight: 600 }}>
+                            {split
+                              ? `${m.dateLabel} · ${m.total} due · ${bookedCount} booked`
+                              : `${m.dateLabel} · ${m.total} review${m.total === 1 ? '' : 's'}`}
+                          </div>
                         </div>
                       )}
-                      {/* Bar */}
-                      <div style={{ position: 'relative', width: '100%', maxWidth: 44, height: `${(m.total / axisMax) * 100}%`, minHeight: m.total ? 3 : 0, background: BAR_COLOR, borderRadius: 3, opacity: full ? 1 : 0.45, transition: 'opacity 0.15s' }}>
-                        {/* Value label */}
-                        {m.total > 0 && !hovered && (
-                          <span style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', marginBottom: 4, fontSize: 11, color: 'var(--text-2)', lineHeight: 1 }}>{m.total}</span>
-                        )}
-                      </div>
+                      {/* Bars */}
+                      {split ? (
+                        <>
+                          {barCol(m.total, BAR_COLOR, 'due')}
+                          {barCol(bookedCount, BOOKED_BAR_COLOR, 'booked')}
+                        </>
+                      ) : (
+                        barCol(m.total, BAR_COLOR, 'single')
+                      )}
                     </div>
                   )
                 })}
               </div>
             </div>
             {/* Month labels */}
-            <div style={{ display: 'flex', gap: 32, marginTop: 6 }}>
+            <div style={{ display: 'flex', gap: 0, marginTop: 6 }}>
               {monthly.map((m, i) => (
                 <span key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'var(--text-2)', whiteSpace: 'nowrap' }}>{m.monthLabel}</span>
               ))}
@@ -199,7 +224,7 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
                     borderRadius: 6,
                     padding: '8px 14px',
                     fontSize: 13.5,
-                    fontWeight: active ? 500 : 400,
+                    fontWeight: 500,
                     color: active ? 'var(--text-1)' : 'var(--text-3)',
                     cursor: 'pointer',
                     fontFamily: 'var(--font)',
@@ -210,40 +235,54 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
             })}
           </div>
 
-          <button
-            onClick={toggleShowBooking}
-            role="switch"
-            aria-checked={showBooking}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font)' }}
-          >
-            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Show dates</span>
-            <span style={{ position: 'relative', width: 34, height: 20, borderRadius: 999, background: showBooking ? 'var(--accent)' : 'var(--bg-3)', transition: 'background 0.15s' }}>
-              <span style={{ position: 'absolute', top: 2, left: showBooking ? 16 : 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--bg)', boxShadow: '0 1px 2px rgba(0,0,0,0.2)', transition: 'left 0.15s' }} />
-            </span>
-          </button>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 20 }}>
+            <button
+              onClick={() => { setShowPast(p => !p); setPage(0) }}
+              role="switch"
+              aria-checked={showPast}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font)' }}
+            >
+              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Show past</span>
+              <span style={{ position: 'relative', width: 34, height: 20, borderRadius: 999, background: showPast ? 'var(--accent)' : 'var(--bg-3)', transition: 'background 0.15s' }}>
+                <span style={{ position: 'absolute', top: 2, left: showPast ? 16 : 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--bg)', boxShadow: '0 1px 2px rgba(0,0,0,0.2)', transition: 'left 0.15s' }} />
+              </span>
+            </button>
+
+            <button
+              onClick={toggleShowBooking}
+              role="switch"
+              aria-checked={showBooking}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font)' }}
+            >
+              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Show dates</span>
+              <span style={{ position: 'relative', width: 34, height: 20, borderRadius: 999, background: showBooking ? 'var(--accent)' : 'var(--bg-3)', transition: 'background 0.15s' }}>
+                <span style={{ position: 'absolute', top: 2, left: showBooking ? 16 : 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--bg)', boxShadow: '0 1px 2px rgba(0,0,0,0.2)', transition: 'left 0.15s' }} />
+              </span>
+            </button>
+          </div>
         </div>
 
         <table className="ds-table profile-card" style={{ marginTop: 24, border: '1px solid var(--border)', borderRadius: 8, borderCollapse: 'separate', borderSpacing: 0, overflow: 'hidden', width: '100%', tableLayout: 'fixed' }}>
           <colgroup>
             {showBooking ? (
               <>
-                <col style={{ width: '28%' }} />
-                <col style={{ width: '18%' }} />
-                <col style={{ width: '18%' }} />
+                <col style={{ width: '24%' }} />
+                <col style={{ width: '24%' }} />
+                <col style={{ width: '16%' }} />
                 <col style={{ width: '16%' }} />
                 <col style={{ width: '20%' }} />
               </>
             ) : (
               <>
-                <col style={{ width: '54%' }} />
+                <col style={{ width: '40%' }} />
+                <col style={{ width: '36%' }} />
                 <col style={{ width: '24%' }} />
-                <col style={{ width: '22%' }} />
               </>
             )}
           </colgroup>
           <thead>
             <tr>
-              {(showBooking ? ['Client', 'Due date', 'Booked date', 'Status', 'Prep pack'] : ['Client', 'Status', 'Prep pack']).map(h => (
+              {(showBooking ? ['Client', 'Email', 'Due date', 'Booked date', 'Status'] : ['Client', 'Email', 'Status']).map(h => (
                 <th key={h} style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>{h}</th>
               ))}
             </tr>
@@ -251,9 +290,8 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
           <tbody>
             {pageReviews.map((c, i) => {
               const isLast = i === pageReviews.length - 1
-              const status = reviewStatus(c)
-              const meta = STATUS_META[status]
-              const tdStyle: React.CSSProperties = { padding: '13px 16px', borderBottom: (isLast && (!showPast || pastReviews.length === 0)) ? 'none' : '1px solid var(--border)', fontSize: 13.5, color: 'var(--text-2)' }
+              const meta = c.reviewDueDate ? STATUS_META[reviewStatus(c)] : null
+              const tdStyle: React.CSSProperties = { padding: '13px 16px', borderBottom: (isLast && pastReviews.length === 0) ? 'none' : '1px solid var(--border)', fontSize: 15, color: 'var(--text-2)' }
               return (
                 <tr
                   key={c.name}
@@ -263,14 +301,19 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
                   onMouseLeave={e => (e.currentTarget.style.background = '')}
                 >
                   <td style={{ ...tdStyle, fontWeight: 500, color: 'var(--text-1)' }}>
-                    {c.name}
-                    {c.account === 'live-joint' && (
-                      <span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>+1</span>
-                    )}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>
+                        {c.name}
+                        {c.account === 'live-joint' && c.spouseName && (
+                          <span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>&amp; {c.spouseName}</span>
+                        )}
+                      </span>
+                    </span>
                   </td>
+                  <td style={{ ...tdStyle, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.email}</td>
                   {showBooking && (
                     <>
-                      <td style={{ ...tdStyle, whiteSpace: 'nowrap', color: 'var(--text-1)' }}>
+                      <td style={{ ...tdStyle, whiteSpace: 'nowrap', color: c.reviewDueDate ? 'var(--text-1)' : 'var(--text-3)' }}>
                         {formatReviewDate(c.reviewDueDate)}
                       </td>
                       <td style={{ ...tdStyle, whiteSpace: 'nowrap', color: c.reviewBookedDate ? 'var(--text-1)' : 'var(--text-3)' }}>
@@ -279,35 +322,16 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
                     </>
                   )}
                   <td style={tdStyle}>
-                    <span className={meta.badge}>{meta.label}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    {/* Fixed-height wrapper keeps every row the same height whether the
-                        cell shows a badge or the taller Request button. */}
-                    <div style={{ display: 'flex', alignItems: 'center', height: 26 }}>
-                      {(() => {
-                        const prep = prepStatusFor(c.name)
-                        if (prep === 'ready') return <span className="ds-badge ds-badge-success">Pack ready</span>
-                        if (prep === 'requested') return <span className="ds-badge ds-badge-warn">Requested</span>
-                        return (
-                          <button
-                            className="ds-btn ds-btn-secondary ds-btn-sm"
-                            onClick={e => { e.stopPropagation(); setRequestClient(c) }}
-                            style={{ gap: 6, height: 26 }}
-                          >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" /></svg>
-                            Request
-                          </button>
-                        )
-                      })()}
-                    </div>
+                    {meta
+                      ? <span className={meta.badge}>{meta.label}</span>
+                      : <span className="ds-badge ds-badge-default">No due date</span>}
                   </td>
                 </tr>
               )
             })}
-            {showPast && pastReviews.map((p, i) => {
+            {onLastPage && pastReviews.map((p, i) => {
               const isLast = i === pastReviews.length - 1
-              const td: React.CSSProperties = { padding: '13px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)', fontSize: 13.5, color: 'var(--text-3)' }
+              const td: React.CSSProperties = { padding: '13px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)', fontSize: 15, color: 'var(--text-3)' }
               return (
                 <tr key={`past-${p.name}`}>
                   <td style={{ ...td, fontWeight: 500, color: 'var(--text-2)' }}>
@@ -316,6 +340,7 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
                       <span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>+1</span>
                     )}
                   </td>
+                  <td style={td}>—</td>
                   {showBooking && (
                     <>
                       <td style={{ ...td, whiteSpace: 'nowrap' }}>{formatReviewDate(p.dueDate)}</td>
@@ -327,9 +352,6 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                       Completed
                     </span>
-                  </td>
-                  <td style={td}>
-                    <div style={{ display: 'flex', alignItems: 'center', height: 26 }}>—</div>
                   </td>
                 </tr>
               )
@@ -359,15 +381,6 @@ export default function ReviewsListPage({ onSelect, prepStatusFor, onRequestPrep
           </div>
         )}
       </div>
-
-      {requestClient && (
-        <PrepPackModal
-          client={requestClient.name}
-          meeting={formatReviewDate(requestClient.reviewBookedDate ?? requestClient.reviewDueDate)}
-          onClose={() => setRequestClient(null)}
-          onSubmit={(notes) => onRequestPrepPack(requestClient, notes)}
-        />
-      )}
 
     </div>
   )

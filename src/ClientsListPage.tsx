@@ -1,61 +1,40 @@
 import { useState } from 'react'
 import { clients, type Client } from './data'
+import { householdLabel } from './forms'
 
-const tabs = ['All Clients', 'Live', 'Onboarding'] as const
+const tabs = ['All', 'Live', 'Prospect'] as const
 type Tab = typeof tabs[number]
 
 function AccountBadges({ type }: { type: string }) {
   if (type === 'onboarding') {
-    return <span className="ds-badge ds-badge-warn">Onboarding</span>
+    return <span className="ds-badge ds-badge-warn">Prospect</span>
   }
   return <span className="ds-badge ds-badge-success">Live Client</span>
 }
 
-function FormStatusCell({ status }: { status: string }) {
-  let color = 'var(--text-3)'
-  let label = 'Not started'
-  if (status === 'complete') { color = 'var(--success)'; label = 'Complete' }
-  if (status === 'in-progress') { color = 'var(--warn)'; label = 'In progress' }
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0, display: 'inline-block' }} />
-      {label}
-    </div>
-  )
-}
-
 export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) => void }) {
-  const [activeTab, setActiveTab] = useState<Tab>('All Clients')
+  const [activeTab, setActiveTab] = useState<Tab>('All')
 
   const filtered = clients.filter(c => {
     if (activeTab === 'Live') return c.account === 'live' || c.account === 'live-joint'
-    if (activeTab === 'Onboarding') return c.account === 'onboarding'
+    if (activeTab === 'Prospect') return c.account === 'onboarding'
     return true
   })
 
   return (
     <div className="r-page-pad" style={{ display: 'flex', flexDirection: 'column', gap: 24, minHeight: '100%', maxWidth: 1750, margin: '0 auto' }}>
 
-      {/* Title */}
-      <div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.025em', margin: 0 }}>
-          Clients
-        </h1>
-        <p style={{ fontSize: 13.5, color: 'var(--text-2)', marginTop: 4 }}>Use the search or filters to find clients</p>
-      </div>
-
       {/* Stat cards */}
       <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
         <div className="stat-card" style={{ border: '1px solid var(--border)' }}>
           <div>
-            <div className="stat-label" style={{ color: 'var(--text-2)' }}>Live clients</div>
+            <div className="stat-label" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-label)' }}>Live clients</div>
             <div className="stat-num">10</div>
           </div>
         </div>
         <div className="stat-card" style={{ border: '1px solid var(--border)' }}>
           <div>
-            <div className="stat-label" style={{ color: 'var(--text-2)' }}>Onboarding</div>
+            <div className="stat-label" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-label)' }}>Prospect</div>
             <div className="stat-num">4</div>
           </div>
         </div>
@@ -68,10 +47,6 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input className="ds-input" placeholder="Search clients..." style={{ width: '100%', paddingLeft: 32, height: 40 }} />
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="ds-btn ds-btn-secondary ds-btn-lg">Refresh</button>
-          <button className="ds-btn ds-btn-primary ds-btn-lg">New Prospect</button>
         </div>
       </div>
 
@@ -88,7 +63,7 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
                 borderRadius: 6,
                 padding: '8px 14px',
                 fontSize: 13.5,
-                fontWeight: activeTab === tab ? 500 : 400,
+                fontWeight: 500,
                 color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)',
                 cursor: 'pointer',
                 fontFamily: 'var(--font)',
@@ -102,29 +77,36 @@ export default function ClientsListPage({ onSelect }: { onSelect: (c: Client) =>
           <thead>
             <tr>
               <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Client</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Household</th>
+              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Email</th>
               <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Account</th>
-              <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Form status</th>
               <th style={{ padding: '14px 16px', color: 'var(--text-2)', fontWeight: 500, borderBottom: '1px solid var(--border)' }}>Last updated</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((c, i) => {
               const isLast = i === filtered.length - 1
-              const tdStyle: React.CSSProperties = { padding: '13px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)' }
+              const tdStyle: React.CSSProperties = { padding: '13px 16px', borderBottom: isLast ? 'none' : '1px solid var(--border)', fontSize: 15 }
               return (
                 <tr key={c.name} onClick={() => onSelect(c)} style={{ cursor: 'pointer', borderBottom: 'none' }}>
                   <td style={tdStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontWeight: 500 }}>
                         {c.name}
-                        {c.account === 'live-joint' && (
-                          <span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>+1</span>
+                        {c.account === 'live-joint' && c.spouseName && (
+                          <span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>&amp; {c.spouseName}</span>
                         )}
                       </span>
                     </div>
                   </td>
+                  <td style={tdStyle}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 28, padding: '0 10px', borderRadius: 999, border: '1px solid var(--border)', background: '#fff', fontSize: 13, fontWeight: 500, color: 'var(--text-2)', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: 'var(--text-3)' }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{householdLabel(c)}</span>
+                    </span>
+                  </td>
+                  <td style={{ ...tdStyle, color: 'var(--text-2)' }}>{c.email}</td>
                   <td style={tdStyle}><AccountBadges type={c.account} /></td>
-                  <td style={tdStyle}><FormStatusCell status={c.formStatus} /></td>
                   <td style={tdStyle}>{c.lastUpdated}</td>
                 </tr>
               )

@@ -426,7 +426,7 @@ body {
   border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--text-2);
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 500;
   transition: background 0.1s, color 0.1s;
   user-select: none;
@@ -476,6 +476,13 @@ body {
 ::-webkit-scrollbar-track   { background: transparent; }
 ::-webkit-scrollbar-thumb   { background: var(--border-strong); border-radius: 3px; }
 
+/* Quiet scroll: keep the thumb hidden until the user is actually scrolling,
+   so opening a tall view (or hovering the area) doesn't flash a scrollbar. */
+.scroll-quiet { scrollbar-color: transparent transparent; }
+.scroll-quiet.is-scrolling { scrollbar-color: var(--border-strong) transparent; }
+.scroll-quiet::-webkit-scrollbar-thumb { background: transparent; transition: background 0.3s; }
+.scroll-quiet.is-scrolling::-webkit-scrollbar-thumb { background: var(--border-strong); }
+
 /* ── Responsive ── */
 
 /* Touch targets for coarse pointer (iPad/touch screens) */
@@ -494,7 +501,7 @@ body {
 /* Responsive grid helpers */
 .r-grid-overview {
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 .r-grid-two-col {
@@ -526,6 +533,23 @@ body {
   .r-tabs-pad    { padding: 0 20px; margin-top: 16px; }
   .r-content-pad { padding: 20px 20px; }
   .r-page-pad    { padding: 20px 20px; }
+}
+
+/* Profile tab ribbon — underline extends full width past content padding */
+.profile-tabs {
+  box-sizing: border-box;
+  /* Cancel r-content-pad's top padding so the ribbon starts at the top stroke (y=0).
+     Buttons are centered via align-items:center, so vertical padding above/below
+     the tabs is set by the extra height beyond the button row. */
+  height: 64px;
+  flex-shrink: 0;
+  margin: -16px -24px 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .profile-tabs { margin: -20px -20px 0; padding: 0 20px; }  /* cancel narrow content-pad top (20) */
 }
 
 /* Tabs overflow on narrow */
